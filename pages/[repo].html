@@ -1,0 +1,11 @@
+<!-- @layout "default.html" -->
+<h1 id="title">[ repoName ]</h1>
+
+<script src="public/falcon.js"></script>
+<script>
+server.onload = () => {
+    $("#title").$template({
+        repoName: server.slugs.repo,
+    });
+};
+</script>

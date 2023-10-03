@@ -44,6 +44,7 @@ server.onload = async () => {
         const desc = descPath ? fs.readFileSync(descPath).toString() : null;
         const repo = git.simpleGit({ baseDir: repoPath });
 
+        const name = path.basename(repoPath);
         let author, creationDate, lastCommit;
         try {
             const { all: commits, total, latest } = await repo.log();
@@ -55,11 +56,11 @@ server.onload = async () => {
         }
 
         $("#row").$templateClone({
-            name: path.basename(repoPath),
+            name: name,
             description: desc ?? "<i>n/a</i>",
             creationDate: creationDate,
             lastCommit: lastCommit,
-            url: "/foobar",
+            url: name,
         });
     }
 };
