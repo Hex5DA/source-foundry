@@ -1,0 +1,67 @@
+<!-- @layout "default.html" -->
+
+<h1 id="title">sourcefoundry</h1>
+<figure>
+    <table id="table">
+        <thead>
+            <tr>
+                <th>name</th>
+                <th>description</th>
+                <th>creation date</th>
+                <th>last commit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="row">
+                <td><a href="[ url ]">[ name ]</a></td>
+                <td>[ description ]</td>
+                <td>[ creationDate ]</td>
+                <td>[ lastCommit ]</td>
+            </tr>
+        </tbody>
+    </table>
+</figure>
+
+<script src="public/falcon.js"></script>
+<script>
+server.onload = async () => {
+    const { fs, path, git } = server.imports;
+    const root = path.resolve("/home/0x5da/projects/");
+
+    const repos = [];
+    for (entry of fs.readdirSync(root)) {
+        const repo = path.join(root, entry);
+        if (fs.lstatSync(repo).isDirectory()) {
+            if (fs.existsSync(path.join(repo, ".git"))) {
+                repos.push(repo);
+            }
+        }
+    }
+
+    const exists = filename => fs.existsSync(path.resolve(filename)) ? path.resolve(filename) : null;
+    for (const repoPath of repos) {
+        const descPath = exists(path.join(repoPath, "description")) ?? exists(path.join(repoPath, ".git/description"));
+        const desc = descPath ? fs.readFileSync(descPath).toString() : null;
+        const repo = git.simpleGit({ baseDir: repoPath });
+
+        let author, creationDate, lastCommit;
+        try {
+            const { all: commits, total, latest } = await repo.log();
+            creationDate = commits.at(-1).date ?? "err";
+            author = commits.at(-1).author_name ?? "err";
+            lastCommit = latest.date ?? "err";
+        } catch {
+            author = creationDate = lastCommit = "<i>unknown</i>";
+        }
+
+        $("#row").$templateClone({
+            name: path.basename(repoPath),
+            description: desc ?? "<i>n/a</i>",
+            creationDate: creationDate,
+            lastCommit: lastCommit,
+            url: "/foobar",
+        });
+    }
+};
+</script>
+
