@@ -1,6 +1,11 @@
 <!-- @layout "default.html" -->
 
-<h1 id="title">sourcefoundry</h1>
+<style>
+.row-date {
+    font-style: italic;
+}
+</style>
+
 <figure>
     <table id="table">
         <thead>
@@ -15,14 +20,15 @@
             <tr id="row">
                 <td><a href="[ url ]">[ name ]</a></td>
                 <td>[ description ]</td>
-                <td>[ creationDate ]</td>
-                <td>[ lastCommit ]</td>
+                <td class="row-date">[ creationDate ]</td>
+                <td class="row-date">[ lastCommit ]</td>
             </tr>
         </tbody>
     </table>
 </figure>
 
-<script src="public/falcon.js"></script>
+<script src="/public/falcon.js"></script>
+<script src="/public/lib.js"></script>
 <script>
 server.onload = async () => {
     const { fs, path, git } = server.imports;
@@ -40,7 +46,7 @@ server.onload = async () => {
 
     const exists = filename => fs.existsSync(path.resolve(filename)) ? path.resolve(filename) : null;
     for (const repoPath of repos) {
-        const descPath = exists(path.join(repoPath, "description")) ?? exists(path.join(repoPath, ".git/description"));
+        const descPath = exists(path.join(repoPath, ".git/description")) ?? exists(path.join(repoPath, "description"));
         const desc = descPath ? fs.readFileSync(descPath).toString() : null;
         const repo = git.simpleGit({ baseDir: repoPath });
 
@@ -48,19 +54,19 @@ server.onload = async () => {
         let author, creationDate, lastCommit;
         try {
             const { all: commits, total, latest } = await repo.log();
-            creationDate = commits.at(-1).date ?? "err";
-            author = commits.at(-1).author_name ?? "err";
-            lastCommit = latest.date ?? "err";
+            creationDate = getFormattedTime(commits.at(-1).date);
+            author = commits.at(-1).author_name;
+            lastCommit = getFormattedTime(latest.date);
         } catch {
             author = creationDate = lastCommit = "<i>unknown</i>";
         }
 
         $("#row").$templateClone({
             name: name,
-            description: desc ?? "<i>n/a</i>",
+            description: desc ?? "<i>not provided</i>",
             creationDate: creationDate,
             lastCommit: lastCommit,
-            url: name,
+            url: `/repo/${name}/`,
         });
     }
 };

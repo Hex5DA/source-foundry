@@ -2,9 +2,54 @@
 <html data-font="monospace">
 <head>
     <title>sourcefoundry</title>
-    <link rel="stylesheet" href="public/skua.css" />
+    <link rel="stylesheet" href="/public/skua.css" />
+
+    <style>
+    :root {
+        --page-width: 95vw;
+        --max-page-width: 95vw;
+    }
+
+    header > a {
+        font-style: italic;
+    }
+
+    header > div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+    }
+
+    #theme-switcher {
+        height: 60%;
+    }
+    </style>
+    <script>
+        let dark = true;
+        window.addEventListener("load", () => {
+            const theme = document.getElementById("theme-switcher");
+            const html = document.getElementsByTagName("html")[0];
+            theme.onclick = () => {
+                dark = !dark;
+                html.setAttribute("data-theme", dark ? "dark" : "light");
+                theme.innerText = dark ? "dark" : "light";
+            };
+        });
+    </script>
 </head>
 <body>
-    <!-- @slot -->
+    <header>
+        <div>
+            <h1>SRCFOUNDRY</h1>     
+            <button id="theme-switcher">dark</button>
+        </div>
+
+        <a href="/">home</a>
+    </header>
+
+    <main>
+        <!-- @slot -->
+    </main>
 </body>
 </html>

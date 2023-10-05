@@ -1,0 +1,60 @@
+<!-- @layout "default.html" -->
+<h1 id="title">[ repoName ]</h1>
+
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>name</th>
+                <th>last commit</th>
+                <th>commit message</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="row">
+                <td>[ name ]</td>
+                <td>[ lastCommit ]</td>
+                <td>[ commitMessage ]</td>
+            </tr>
+        </tbody>
+    </table>
+</figure>
+
+<style>
+.hidden-file {
+    color: grey;
+    font-style: italic;
+}
+</style>
+
+<script src="/public/falcon.js"></script>
+<script src="/public/lib.js"></script>
+<script>
+server.onload = async () => {
+    const { fs, path, git } = server.imports;
+    const gitRoot = "/home/0x5da/projects/";
+    const repoName = server.slugs.name;
+    const repoPath = `${gitRoot}${repoName}`;
+    const repo = git.simpleGit({ baseDir: repoPath });
+
+    $("#title").$template({
+        repoName: repoName,
+    });
+
+    for (const entry of fs.readdirSync(repoPath)) {
+        const { latest } = await repo.log({ file: entry });
+        if (!latest) continue;
+
+
+
+        $("#row").$templateClone({
+            name: entry,
+            lastCommit: getFormattedTime(latest.date),
+            commitMessage: latest.message,
+        }, {
+            class: entry.startsWith(".") ? "hidden-file" : "",
+        });
+    }
+
+};
+</script>

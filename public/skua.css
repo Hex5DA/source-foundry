@@ -13,6 +13,8 @@
     --a: var(--da);
     --na: var(--la);
     --flair: var(--fg);
+
+    --page-width: 90vw;
     --max-page-width: 80ch;
 }
 
@@ -23,6 +25,20 @@
         --a: var(--la);
         --na: var(--da);
     }
+}
+
+html[data-theme="light"] {
+    --bg: var(--lbg);
+    --fg: var(--lfg);
+    --a: var(--la);
+    --na: var(--da);
+}
+
+html[data-theme="dark"], html:not([data-theme]) {
+    --bg: var(--dbg);
+    --fg: var(--dfg);
+    --a: var(--da);
+    --na: var(--la);
 }
 
 /* general layout shenanigans */
@@ -62,7 +78,7 @@ html[data-font="monospace"], html[data-font="monospace"] button {
 }
 
 main {
-    width: 90vw;
+    width: var(--page-width);
     max-width: var(--max-page-width);
 }
 
@@ -159,6 +175,10 @@ ol {
 
 /* figures & tables */
 
+table, figure {
+    max-width: var(--max-page-width);
+}
+
 table {
     border-collapse: collapse;
 }
@@ -168,7 +188,7 @@ td, th {
 }
 
 tr {
-    transition: background-color ease-in .4s;
+    transition: background-color ease-out .05s;
 }
 
 td + td, th + th {
@@ -183,7 +203,7 @@ table caption, figcaption {
     font-style: italic;
     margin: 10px auto;
     padding-left: 10px;
-    border-left: 2px solid var(--fg);
+    border-left: 1px solid var(--fg);
 }
 
 tbody tr:nth-child(even) {
@@ -191,11 +211,11 @@ tbody tr:nth-child(even) {
 }
 tbody tr:nth-child(even):hover { 
     background-color: var(--bg);
-    border: solid 2px var(--a); 
+    box-shadow: 0 0 0 2px var(--a) inset;
 }
 tbody tr:hover {
     background-color: var(--a);
-    border: solid 2px var(--bg); 
+    box-shadow: 0 0 0 2px var(--bg) inset;
 }
 
 /* buttons & forms */
