@@ -30,10 +30,10 @@
 <script src="/public/falcon.js"></script>
 <script src="/public/lib.js"></script>
 <script>
-window.$event("load").on = () => console.log("called 1");
-window.$event("load").on = () => console.log("called 2");
+window.$event("load").on = () => console.log("window 1");
+window.$event("load").on = () => console.log("window 2");
 
-server.onload = async () => {
+$objEvent(server, "load").on = async () => {
     const { fs, path, git } = server.imports;
     const root = path.resolve("/home/0x5da/projects/");
 

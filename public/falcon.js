@@ -35,8 +35,9 @@ Element.prototype.$templateClone = function (ctx, attrs={}) {
     }
 }
 
-Window.prototype.$event = function (eventName) {
-    const target = this;
+function _event(target, eventName) {
+    if (!target["addEventListener"]) throw Error("`$event` should only be called on objects with event support.");
+
     let options = null;
     return {
         dispatch: function (event) {
@@ -54,3 +55,15 @@ Window.prototype.$event = function (eventName) {
         }
     };
 }
+
+// window.$event("load").on 
+// $event(server, "load").on
+
+function $objEvent(obj, eventName) {
+    return _event(obj, eventName);
+}
+
+const _registerEvents = cls => cls.prototype.$event = function (eventName) { return _event(this, eventName); };
+_registerEvents(Document);
+_registerEvents(Window);
+
