@@ -35,3 +35,22 @@ Element.prototype.$templateClone = function (ctx, attrs={}) {
     }
 }
 
+Window.prototype.$event = function (eventName) {
+    const target = this;
+    let options = null;
+    return {
+        dispatch: function (event) {
+            return target.dispatchEvent(event);
+        },
+        remove: function (handler, options) {
+            target.removeEventListener(eventName, handler, options);
+        },
+        opts: function (opts) {
+            options = opts;
+        },
+        /** @param {function(Event): void} handler */
+        set on(handler) {
+            target.addEventListener(eventName, handler, options)
+        }
+    };
+}
