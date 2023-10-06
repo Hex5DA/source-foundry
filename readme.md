@@ -13,6 +13,3 @@ a small, simple, idiomatic `git` frontend.
   - ahhh
 - if `server.onload` is blocking, the page will freeze. 
   a configurable max timeout?
-- i think smew is, for some reason, deleting certain strings
-  like `$template`??
-  MAJOR wtf!

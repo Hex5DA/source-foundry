@@ -1,4 +1,11 @@
 <!-- @layout "default.html" -->
+
+<style>
+.row-date {
+    font-style: italic;
+}
+</style>
+
 <h1 id="title">[ repoName ]</h1>
 
 <figure>
@@ -13,7 +20,7 @@
         <tbody>
             <tr id="row">
                 <td>[ name ]</td>
-                <td>[ lastCommit ]</td>
+                <td class="row-date">[ lastCommit ]</td>
                 <td>[ commitMessage ]</td>
             </tr>
         </tbody>
@@ -30,7 +37,7 @@
 <script src="/public/falcon.js"></script>
 <script src="/public/lib.js"></script>
 <script>
-server.onload = async () => {
+$objEvent(server, "load").on = async () => {
     const { fs, path, git } = server.imports;
     const gitRoot = "/home/0x5da/projects/";
     const repoName = server.slugs.name;
