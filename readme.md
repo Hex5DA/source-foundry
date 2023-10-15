@@ -4,6 +4,7 @@ a small, simple, idiomatic `git` frontend.
 
 ## bugs
 
+- can't load external resources
 - need `"`/`'` around directive paths
 - public directories shoudl be configurable
 - `/layouts/default.html` -> `/default.html` (path roots)
@@ -15,4 +16,5 @@ a small, simple, idiomatic `git` frontend.
           support github pages - github CI to rebuild on push!
 - change `skua` colours - darker background in dark mode, table themes?
 - ditch `skua` for `SRCFNDRY` (doesn't fit vibe - see `stagit`)
+
 

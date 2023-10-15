@@ -19,7 +19,7 @@
         </thead>
         <tbody>
             <tr id="row">
-                <td>[ name ]</td>
+                <td><a href="files/[ filename ]">[ name ]</a></td>
                 <td class="row-date">[ lastCommit ]</td>
                 <td>[ commitMessage ]</td>
             </tr>
@@ -50,12 +50,11 @@ $objEvent(server, "load").on = async () => {
 
     for (const entry of fs.readdirSync(repoPath)) {
         const { latest } = await repo.log({ file: entry });
-        if (!latest) continue;
-
-
+        if (!latest) continue; // TODO: wat
 
         $("#row").$templateClone({
             name: entry,
+            filename: entry,
             lastCommit: getFormattedTime(latest.date),
             commitMessage: latest.message,
         }, {

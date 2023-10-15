@@ -1,0 +1,44 @@
+<!-- @layout "default.html" -->
+
+<style>
+#contents {
+    white-space: pre;
+    border: 20px solid var(--a);
+    padding: 0;
+}
+
+#contents[data-wrap="nowrap"] {
+    overflow: scroll;
+}
+#contents[data-wrap="wrap"] {
+    white-space: pre-wrap;
+}
+</style>
+
+<h1 id="heading">[ filename ]</h1>
+<input checked id="wrap" type="checkbox" />
+<!-- on 1 line to prevent whitespace -->
+<pre data-wrap="wrap" id="contents"><code>[ contents ]</code></pre>
+
+<link rel="stylesheet" href="/public/dark.css">
+<script src="/public/falcon.js"></script>
+<script>
+window.$event("load").on = () => {
+    let wrap = false;
+    $("#wrap").$event("change").on = () => {
+        $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "nowrap" : "wrap");
+    };
+};
+
+$objEvent(server, "load").on = async () => {
+    const { fs, starryNight: { common, createStarryNight }, hastToHtml } = server.imports;
+
+    $("#heading").$template({ filename: server.slugs.filename });
+    const contents = fs.readFileSync("/home/0x5da/projects/" + server.slugs.name + "/" + server.slugs.filename).toString();
+    
+    const st = await createStarryNight(common);
+    const scope = st.flagToScope(server.slugs.filename.split(".").pop());
+    const tree = st.highlight(contents, scope);
+    $("#contents").$template({ contents: hastToHtml(tree) });
+};
+</script>

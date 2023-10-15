@@ -56,9 +56,6 @@ function _event(target, eventName) {
     };
 }
 
-// window.$event("load").on 
-// $event(server, "load").on
-
 function $objEvent(obj, eventName) {
     return _event(obj, eventName);
 }
@@ -66,4 +63,5 @@ function $objEvent(obj, eventName) {
 const _registerEvents = cls => cls.prototype.$event = function (eventName) { return _event(this, eventName); };
 _registerEvents(Document);
 _registerEvents(Window);
+_registerEvents(HTMLElement);
 
