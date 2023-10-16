@@ -31,12 +31,12 @@ window.$event("load").on = () => {
 };
 
 $objEvent(server, "load").on = async () => {
-    const { fs, starryNight: { common, createStarryNight }, hastToHtml } = server.imports;
+    const { fs, starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
 
     $("#heading").$template({ filename: server.slugs.filename });
     const contents = fs.readFileSync("/home/0x5da/projects/" + server.slugs.name + "/" + server.slugs.filename).toString();
     
-    const st = await createStarryNight(common);
+    const st = await createStarryNight(langs);
     const scope = st.flagToScope(server.slugs.filename.split(".").pop());
     const tree = st.highlight(contents, scope);
     $("#contents").$template({ contents: hastToHtml(tree) });
