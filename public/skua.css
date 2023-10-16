@@ -1,5 +1,4 @@
 :root {
-
     --lbg: #F8F0E3;
     --lfg: #272d35;
     --la: #d7dbd7;
@@ -34,7 +33,7 @@ html[data-theme="light"] {
     --na: var(--da);
 }
 
-html[data-theme="dark"], html:not([data-theme]) {
+html[data-theme="dark"] {
     --bg: var(--dbg);
     --fg: var(--dfg);
     --a: var(--da);

@@ -1,0 +1,107 @@
+/* a custom syntax highlighting theme, for use with `starry-nights`:
+   see <https://github.com/Alhadis/language-etc/blob/master/samples/lists/scope-previews.nanorc> */
+
+/* constants */
+
+:root {
+    --code-dark-fg: #c5c8c6;
+    --code-dark-bg: #1c1d1d;
+    --code-dark-black: #ab9bcc;
+    --code-dark-red: #BF616A;
+    --code-dark-green: #A3BE8C;
+    --code-dark-yellow: #EBCB8B;
+    --code-dark-blue: #d36f58;
+
+    --code-light-fg: #1b1c1b;
+    --code-light-bg: #1c1d1d;
+    --code-light-black: #6e6c73;
+    --code-light-red: #C82A2A;
+    --code-light-green: #468015;
+    --code-light-yellow: #C44F17;
+    --code-light-blue: #294B4F;
+
+    --code-fg: var(--code-dark-fg);
+    --code-bg: var(--code-dark-bg);
+    --code-black: var(--code-dark-black);
+    --code-red: var(--code-dark-red);
+    --code-green: var(--code-dark-green);
+    --code-yellow: var(--code-dark-yellow);
+    --code-blue: var(--code-dark-blue);
+}
+
+html[data-theme="dark"] {
+    --code-fg: var(--code-dark-fg);
+    --code-bg: var(--code-dark-bg);
+    --code-black: var(--code-dark-black);
+    --code-red: var(--code-dark-red);
+    --code-green: var(--code-dark-green);
+    --code-yellow: var(--code-dark-yellow);
+    --code-blue: var(--code-dark-blue);
+}
+
+html[data-theme="light"] {
+    --code-fg: var(--code-light-fg);
+    --code-bg: var(--code-light-bg);
+    --code-black: var(--code-light-black);
+    --code-red: var(--code-light-red);
+    --code-green: var(--code-light-green);
+    --code-yellow: var(--code-light-yellow);
+    --code-blue: var(--code-light-blue);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --code-fg: var(--code-light-fg);
+        --code-bg: var(--code-light-bg);
+        --code-black: var(--code-light-black);
+        --code-red: var(--code-light-red);
+        --code-green: var(--code-light-green);
+        --code-yellow: var(--code-light-yellow);
+        --code-blue: var(--code-light-blue);
+    }
+}
+
+code {
+    color: var(--code-fg);
+}
+
+/* brackets */
+.pl-ba {
+    color: var(--code-fg);
+}
+/* constants */
+.pl-c1 {
+    color: var(--code-red);
+}
+/* comments */
+.pl-c {
+    color: var(--code-black);    
+}
+/* keyword */
+.pl-k {
+    color: var(--code-red);
+}
+/* string */
+.pl-s {
+    color: var(--code-green);
+}
+/* variable */
+.pl-v {
+    color: var(--code-yellow);
+}
+/* entity */
+.pl-e {
+    color: var(--code-blue);
+}
+/* entity tag */
+.pl-ent {
+    color: var(--code-yellow);
+}
+/* entity name */
+.pl-en {
+    color: var(--code-blue);
+}
+/* variable other */
+.pl-smi {
+    color: var(--code-yellow);
+}
