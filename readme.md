@@ -16,5 +16,14 @@ a small, simple, idiomatic `git` frontend.
           support github pages - github CI to rebuild on push!
 - change `skua` colours - darker background in dark mode, table themes?
 - ditch `skua` for `SRCFNDRY` (doesn't fit vibe - see `stagit`)
+- regex paths in `tern` - eg. file path as slug.
+- `skua` responsive forms / form styling
 
+## pipeline
+
+1. `smew`
+2. copy static files to `dist/`
+3. [minify `dist/`](https://github.com/wilsonzlin/minify-html)
+4. [cull CSS (read: `skua`)](https://github.com/purifycss/purifycss)
+5. `tern`
 

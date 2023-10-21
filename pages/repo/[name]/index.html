@@ -8,6 +8,11 @@
 
 <h1 id="title">[ repoName ]</h1>
 
+<form>
+    <input id="query" type="search" placeholder="query" />
+    <button>search</button>
+</form>
+
 <figure>
     <table>
         <thead>
@@ -17,9 +22,9 @@
                 <th>commit message</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="repos">
             <tr id="row">
-                <td><a href="files/[ filename ]">[ name ]</a></td>
+                <td><a class="repo-name" href="files/[ filename ]">[ name ]</a></td>
                 <td class="row-date">[ lastCommit ]</td>
                 <td>[ commitMessage ]</td>
             </tr>
@@ -37,6 +42,16 @@
 <script src="/public/falcon.js"></script>
 <script src="/public/lib.js"></script>
 <script>
+window.$event("load").on = () => {
+    $("#query").$event("input").on = ev => {
+        for (const row of $all("#repos > tr")) {
+            const name = row.getElementsByClassName("repo-name")[0].innerText;
+            row.style.display = row.id !== "row" && 
+                                name.startsWith(ev.target.value) ? "table-row" : "none";
+        }
+    };
+};
+
 $objEvent(server, "load").on = async () => {
     const { fs, path, git } = server.imports;
     const gitRoot = "/home/0x5da/projects/";

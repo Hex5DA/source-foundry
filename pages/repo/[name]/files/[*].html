@@ -1,0 +1,9 @@
+<!-- @layout "default.html" -->
+
+<pre id="t">[t]</pre>
+<script src="public/falcon.js"></script>
+<script>
+$objEvent(server, "load").on = () => {
+    $("#t").$template({t: server.slugs});
+};
+</script>
