@@ -23,69 +23,43 @@ function _template(source, ctx) {
     });
 }
 
-function _removeIdentifiable(element) {
-    element.removeAttribute("id");
-}
-
 Element.prototype.$template = function (ctx) {
-    this.outerHTML = _template(this.outerHTML, ctx);
-};
+    // this.innerHTML = _template(this.innerHTML, ctx);
+    
+    // create new element
+    // assign it the templated html
+    // hide template element
+    // OR
+    // taking real element
+    // re-assigning html
+    console.log("tmpl");
+    if (!this.$_templateReal) {
+        console.log("branch a");
+        const id = this.getAttribute("id");
+        this.removeAttribute("id");
+        console.log(this.outerHTML)
+        this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
+        this.setAttribute("id", id);
+        return;
 
-Element.prototype.$retemplate = function (ctx) {
-    if (this.$_templateReal) this.$_templateReal.remove();
-    this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
-    this.$_templateReal = this.nextElementSibling;
+        this.$_templateReal = this.nextElementSibling;
+        this.style.display = "none";
+    } else {
+        console.log("branch b");
+        this.$_templateReal.remove();
+        delete this.$_templateReal;
 
-    _removeIdentifiable(this.$_templateReal);
-    this.$_templateReal.style.display = "revert";
-    this.style.display = "none";
+        this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
+        this.$_templateReal = this.nextElementSibling;
+    }
 };
 
 Element.prototype.$templateClone = function (ctx, attrs={}) {
-    this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
-    _removeIdentifiable(this.nextElementSibling);
-    this.nextElementSibling.style.display = "revert";
     this.style.display = "none";
-
+    this.$html(HTMLPositions.afterEnd, _template(this.innerHTML, ctx));
     for (const [key, value] of Object.entries(attrs)) {
         this.nextElementSibling.setAttribute(key, value);
     }
-}
-
-/*
-window.$state = new Proxy({}, {
-    set(obj, prop, rec) {
-        console.log(obj, prop, rec);
-        state[prop] = 
-    }
-});
-*/
-
-class State extends EventTarget {
-    constructor(value) {
-        super();
-        this.__value = value;
-    }
-
-    set value(newValue) {
-        this.__value = newValue;
-        this.dispatchEvent(new CustomEvent("$change", { detail: this.__value }));
-    }
-    get value() {
-        return this.__value;
-    }
-}
-
-function $useState(value) {
-    return [
-        function () {
-            window.$_state
-            return value;
-        },
-        function (value) {
-            
-        },
-    ];
 }
 
 function _event(target, eventName) {
@@ -117,5 +91,4 @@ const _registerEvents = cls => cls.prototype.$event = function (eventName) { ret
 _registerEvents(Document);
 _registerEvents(Window);
 _registerEvents(HTMLElement);
-_registerEvents(State);
 

@@ -1,0 +1,25 @@
+<!-- @layout "default.html" -->
+
+<p id="clicked">you have clicked [ x ] time[ plural ]</p>
+<button id="btn">click me</button>
+
+<script src="/public/falcon.js"></script>
+<script>
+window.$event("load").on = () => {
+    let foo = new State(0);
+
+    $("#btn").$event("click").on = () => {
+        console.log(foo.value);
+        foo.value++;
+        console.log(foo.value);
+    };
+
+    foo.$event("$change").on = ev => {
+        console.log("change", ev.detail);
+        $("#clicked").$retemplate({
+            x: ev.detail,
+            plural: ev.detail === 1 ? "" : "s",
+        });
+    };
+}
+</script>
