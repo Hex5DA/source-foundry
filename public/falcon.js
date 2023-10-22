@@ -52,16 +52,7 @@ Element.prototype.$templateClone = function (ctx, attrs={}) {
     }
 }
 
-/*
-window.$state = new Proxy({}, {
-    set(obj, prop, rec) {
-        console.log(obj, prop, rec);
-        state[prop] = 
-    }
-});
-*/
-
-class State extends EventTarget {
+class $State extends EventTarget {
     constructor(value) {
         super();
         this.__value = value;
@@ -76,17 +67,23 @@ class State extends EventTarget {
     }
 }
 
-function $useState(value) {
-    return [
-        function () {
-            window.$_state
-            return value;
-        },
-        function (value) {
-            
-        },
-    ];
-}
+// [name] gives the value, $[name] gives the `State` object
+window.$state = new Proxy({}, {
+    set(obj, prop, rec) {
+        if (prop in obj) {
+            obj[prop].value = rec;
+        } else {
+            Reflect.set(...arguments);
+        }
+    },
+    get(obj, prop, rec) {
+        if (!prop.startsWith("$")) {
+            return Reflect.get(...arguments).value;
+        } else {
+            return Reflect.get(obj, prop.slice(1), rec);
+        }
+    }
+});
 
 function _event(target, eventName) {
     if (!target["addEventListener"]) throw Error("`$event` should only be called on objects with event support.");
@@ -117,5 +114,5 @@ const _registerEvents = cls => cls.prototype.$event = function (eventName) { ret
 _registerEvents(Document);
 _registerEvents(Window);
 _registerEvents(HTMLElement);
-_registerEvents(State);
+_registerEvents($State);
 

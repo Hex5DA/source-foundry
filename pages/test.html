@@ -6,18 +6,15 @@
 <script src="/public/falcon.js"></script>
 <script>
 window.$event("load").on = () => {
-    let foo = new State(0);
+    $state.foo = new $State(0);
 
     $("#btn").$event("click").on = () => {
-        console.log(foo.value);
-        foo.value++;
-        console.log(foo.value);
+        $state.foo += 1;
     };
 
-    foo.$event("$change").on = ev => {
-        console.log("change", ev.detail);
+    $state.$foo.$event("$change").on = () => {
         $("#clicked").$retemplate({
-            x: ev.detail,
+            x: $state.foo,
             plural: ev.detail === 1 ? "" : "s",
         });
     };
