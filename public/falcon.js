@@ -10,7 +10,7 @@ const HTMLPositions = {
     afterEnd: "afterend",
 };
 
-Element.prototype.$html = function (pos, lit) {
+Element.prototype.$html = function(pos, lit) {
     this.insertAdjacentHTML(pos, lit);
 }
 
@@ -27,11 +27,11 @@ function _removeIdentifiable(element) {
     element.removeAttribute("id");
 }
 
-Element.prototype.$template = function (ctx) {
+Element.prototype.$template = function(ctx) {
     this.outerHTML = _template(this.outerHTML, ctx);
 };
 
-Element.prototype.$retemplate = function (ctx) {
+Element.prototype.$retemplate = function(ctx) {
     if (this.$_templateReal) this.$_templateReal.remove();
     this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
     this.$_templateReal = this.nextElementSibling;
@@ -41,7 +41,7 @@ Element.prototype.$retemplate = function (ctx) {
     this.style.display = "none";
 };
 
-Element.prototype.$templateClone = function (ctx, attrs={}) {
+Element.prototype.$templateClone = function(ctx, attrs = {}) {
     this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
     _removeIdentifiable(this.nextElementSibling);
     this.nextElementSibling.style.display = "revert";
@@ -55,48 +55,124 @@ Element.prototype.$templateClone = function (ctx, attrs={}) {
 class $State extends EventTarget {
     constructor(value) {
         super();
-        this.__value = value;
-    }
-
-    set value(newValue) {
-        this.__value = newValue;
-        this.dispatchEvent(new CustomEvent("$change", { detail: this.__value }));
-    }
-    get value() {
-        return this.__value;
+        this.value = value;
     }
 }
 
-// [name] gives the value, $[name] gives the `State` object
-window.$state = new Proxy({}, {
-    set(obj, prop, rec) {
-        if (prop in obj) {
-            obj[prop].value = rec;
+
+globalThis.$storage = {};
+
+/*
+function $createState(target) {
+    if (!(target instanceof Object)) target = $prim2obj(target);
+
+    let proxyTarget = {};
+    for (const [key, value] of Object.entries(target)) {
+        if (value instanceof Object) {
+            proxyTarget[key] = new EventTarget($createState(value));
         } else {
-            Reflect.set(...arguments);
-        }
-    },
-    get(obj, prop, rec) {
-        if (!prop.startsWith("$")) {
-            return Reflect.get(...arguments).value;
-        } else {
-            return Reflect.get(obj, prop.slice(1), rec);
+            proxyTarget["__" + key] = new EventTarget(value);
+            Object.defineProperty(proxyTarget, key, {
+                get: () => proxyTarget["__" + key],
+                set: newValue => {
+                    proxyTarget["__" + key].target = newValue;
+                    proxyTarget["__" + key].dispatchEvent(new CustomEvent("change"));
+                },
+                enumerable: true,
+            });
         }
     }
-});
+
+    return proxyTarget;
+}
+*/
+
+function $createState(target) {
+    if (!(target instanceof Object))
+        throw Error("can only create state on objects.");
+
+    let r = {};
+    for (let [key, value] of Object.entries(target)) {
+        if (value instanceof Object) {
+            value = $createState(value);
+            value = Object.assign(new EventTarget(), value);
+        }
+        // console.log(key, value);
+
+        const shadow = value;
+        console.log("shadow:", shadow);
+        Object.defineProperty(r, "__" + key, {
+            value: shadow,
+            enumerable: false,
+        });
+
+        Object.defineProperty(r, key, {
+            set(nv) {
+                // console.log("write");
+                r["__" + key] = nv;
+            },
+            get() {
+                // console.log("read", key);
+                return r["__" + key];
+            },
+            enumerable: true,
+            configurable: true,
+        });
+    }
+    return r;
+}   
+
+// NEW:
+// - define setters for everything 
+
+// TODO: look at using Object.setPrototypeOf(obj, EventTarget) instead of wrapping in EventTargets
+//       would mean the original object & properties are intact 
+//       TODO: how does this impact objects with a previously set prototype? can we merge / extend the prototypes?
+
+// BEHAVIOUR
+// - pass in any object / primitive
+// - register event listeners for `$create`, `$read`, `$update` and `$delete` events
+// - register events on sub-objects
+// - events on sub-objects bubble up
+// - re-assigning the root value need not trigger an event
+
+// - recursive proxy
+// - ditch $state
+// ? batch updates (observableslim style - DOM manip)
+// ? events for CRUD
+
+// RECURSIVE PROXY
+// - if value is object:
+//   - proxy the object
+//   - if any properties are objects, recurse
+// - else:
+//   - proxy a dummy, invisible object
+
+// PROXY
+// - on set
+//   - if attribute exists, issue change event
+//   - if attriute does not exist, issue add event
+// ? on delete / on get
+
+// EVENTS
+// - every child object is an eventtarget
+// ? dummy proxies are eventtargets too
+
+// DUMMIES
+// - 
 
 function _event(target, eventName) {
     if (!target["addEventListener"]) throw Error("`$event` should only be called on objects with event support.");
 
     let options = null;
     return {
-        dispatch: function (event) {
+        dispatch: function(event) {
             return target.dispatchEvent(event);
         },
-        remove: function (handler, options) {
+        remove: function(handler, options) {
             target.removeEventListener(eventName, handler, options);
         },
-        opts: function (opts) {
+        opts: function(opts) {
             options = opts;
         },
         /** @param {function(Event): void} handler */
@@ -110,9 +186,10 @@ function $objEvent(obj, eventName) {
     return _event(obj, eventName);
 }
 
-const _registerEvents = cls => cls.prototype.$event = function (eventName) { return _event(this, eventName); };
-_registerEvents(Document);
-_registerEvents(Window);
-_registerEvents(HTMLElement);
+const _registerEvents = cls => cls.prototype.$event = function(eventName) { return _event(this, eventName); };
+//_registerEvents(Document);
+//_registerEvents(Window);
+//_registerEvents(HTMLElement);
+_registerEvents(EventTarget);
 _registerEvents($State);
 

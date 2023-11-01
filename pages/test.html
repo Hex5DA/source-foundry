@@ -1,22 +1,21 @@
 <!-- @layout "default.html" -->
 
-<p id="clicked">you have clicked [ x ] time[ plural ]</p>
-<button id="btn">click me</button>
+<h1>TODOs</h1>
+
+<ul id="todos-cont">
+    <p id="todo">[job]</p>
+</ul>
 
 <script src="/public/falcon.js"></script>
 <script>
 window.$event("load").on = () => {
-    $state.foo = new $State(0);
-
-    $("#btn").$event("click").on = () => {
-        $state.foo += 1;
-    };
-
-    $state.$foo.$event("$change").on = () => {
-        $("#clicked").$retemplate({
-            x: $state.foo,
-            plural: ev.detail === 1 ? "" : "s",
-        });
-    };
+    let obj = { a: 100, b: { c: "hey" } };
+    let st = $createState(obj);
+    // console.log("a: ", st.a);
+    st.a++;
+    console.log("\n\n", st);
+    st.b.addEventListener("change", () => console.log("changed"));
+    st.b.dispatchEvent(new CustomEvent("change"));
+    st.b.c;
 }
 </script>
