@@ -9,20 +9,10 @@
 <script src="/public/falcon.js"></script>
 <script>
 window.$event("load").on = () => {
-    let obj = { a: 100, b: { c: "hey" } };
-    let st = $createState(obj);
+    let state = $createState({ data: [ "praise shadow", "pet shadow", "walk shadow"] });
+    state.data.addEventListener("$change", () => console.log("changed", state));
 
-    st.a++;
-
-    st.b.addEventListener("$change", () => console.log("changed b", st.b));
-    console.log("changing b")
-    st.b = { c: 1 };
-
-    console.log();
-    st.b.c.addEventListener("$change", () => console.log("changed c", st.b.c));
-    console.log("changing c")
-    st.b.c = "hey modified";
-
-    console.log("\nfinal state:", st);
+    console.log(state);
+    state.data.push("feed shadow");
 }
 </script>
