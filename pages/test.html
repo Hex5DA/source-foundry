@@ -11,11 +11,17 @@
 window.$event("load").on = () => {
     let obj = { a: 100, b: { c: "hey" } };
     let st = $createState(obj);
-    // console.log("a: ", st.a);
+
     st.a++;
-    console.log("\n\n", st);
-    st.b.addEventListener("change", () => console.log("changed"));
-    st.b.dispatchEvent(new CustomEvent("change"));
-    st.b.c;
+
+    st.b.addEventListener("$change", () => console.log("changed b", st.b));
+    console.log("changing b")
+    st.b = { c: 1 };
+
+    st.b.c.addEventListener("$change", () => console.log("changed c", st.b.c));
+    console.log("changing c")
+    st.b.c = "hey modified";
+
+    console.log("final state:", st);
 }
 </script>

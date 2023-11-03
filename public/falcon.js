@@ -59,68 +59,71 @@ class $State extends EventTarget {
     }
 }
 
-
-globalThis.$storage = {};
-
-/*
-function $createState(target) {
-    if (!(target instanceof Object)) target = $prim2obj(target);
-
-    let proxyTarget = {};
-    for (const [key, value] of Object.entries(target)) {
-        if (value instanceof Object) {
-            proxyTarget[key] = new EventTarget($createState(value));
-        } else {
-            proxyTarget["__" + key] = new EventTarget(value);
-            Object.defineProperty(proxyTarget, key, {
-                get: () => proxyTarget["__" + key],
-                set: newValue => {
-                    proxyTarget["__" + key].target = newValue;
-                    proxyTarget["__" + key].dispatchEvent(new CustomEvent("change"));
-                },
-                enumerable: true,
-            });
-        }
+function _prim2obj(prim) {
+    switch (typeof prim) {
+        case "boolean": return new Boolean(prim);
+        case "number": return new Number(prim);
+        case "string": return new String(prim);
+        case "symbol": return new Symbol(prim);
+        case "bigint": return new BigInt(prim);
+        case "undefined": return undefined;
+        case "object":
+        case "function":
+            return null;
     }
-
-    return proxyTarget;
 }
-*/
 
-function $createState(target) {
+window._stateEvents = {};
+
+function _eventify(obj) {
+    const events = new EventTarget();
+    Object.defineProperties(obj, {
+        addEventListener: {
+            value: (...args) => {
+                events.addEventListener(...args);
+            }
+        },
+        dispatchEvent: {
+            value: (...args) => {
+                events.dispatchEvent(...args);
+            }
+        },
+    });
+    return obj; // TODO: maybe don't
+}
+
+function $createState(target, parent=null) {
     if (!(target instanceof Object))
         throw Error("can only create state on objects.");
 
-    let r = {};
+    let state = {};
     for (let [key, value] of Object.entries(target)) {
-        if (value instanceof Object) {
-            value = $createState(value);
-            value = Object.assign(new EventTarget(), value);
-        }
-        // console.log(key, value);
+        const shadow = _prim2obj(value) ?? $createState(value);
 
-        const shadow = value;
-        console.log("shadow:", shadow);
-        Object.defineProperty(r, "__" + key, {
+        _eventify(shadow);
+        Object.defineProperty(state, "__" + key, {
             value: shadow,
             enumerable: false,
+            configurable: true,
         });
 
-        Object.defineProperty(r, key, {
-            set(nv) {
-                // console.log("write");
-                r["__" + key] = nv;
+        Object.defineProperty(state, key, {
+            set(newValue) {
+                // TODO: we are clearing listeners here. fix that :)
+                const stated = _eventify(_prim2obj(newValue) ?? $createState(newValue));
+                Object.defineProperty(state, "__" + key, { value: stated });
+                state["__" + key].dispatchEvent(new CustomEvent("$change"));
             },
             get() {
-                // console.log("read", key);
-                return r["__" + key];
+                return state["__" + key];
             },
             enumerable: true,
             configurable: true,
         });
     }
-    return r;
-}   
+
+    return state;
+}
 
 // NEW:
 // - define setters for everything 
