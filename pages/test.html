@@ -18,10 +18,11 @@ window.$event("load").on = () => {
     console.log("changing b")
     st.b = { c: 1 };
 
+    console.log();
     st.b.c.addEventListener("$change", () => console.log("changed c", st.b.c));
     console.log("changing c")
     st.b.c = "hey modified";
 
-    console.log("final state:", st);
+    console.log("\nfinal state:", st);
 }
 </script>

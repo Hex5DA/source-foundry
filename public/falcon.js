@@ -75,30 +75,43 @@ function _prim2obj(prim) {
 
 window._stateEvents = {};
 
+function _hash(state) {
+    const hash = [state.__path ?? "root"];
+    let current = state;
+    while (current.__parent && (current = current.__parent) !== null) {
+        hash.push(current.__path ?? "root");
+    }
+    return hash.reverse().join("/");
+}
+
 function _eventify(obj) {
-    const events = new EventTarget();
+    const id = _hash(obj);
+    if (!(id in window._stateEvents))
+        window._stateEvents[id] = new EventTarget();
+
     Object.defineProperties(obj, {
         addEventListener: {
             value: (...args) => {
-                events.addEventListener(...args);
+                window._stateEvents[id].addEventListener(...args);
             }
         },
         dispatchEvent: {
             value: (...args) => {
-                events.dispatchEvent(...args);
+                window._stateEvents[id].dispatchEvent(...args);
             }
         },
     });
+
     return obj; // TODO: maybe don't
 }
 
-function $createState(target, parent=null) {
+function $createState(target, parent=null, path=null) {
     if (!(target instanceof Object))
         throw Error("can only create state on objects.");
 
-    let state = {};
+    let state = { __parent: parent, __path: path };
     for (let [key, value] of Object.entries(target)) {
-        const shadow = _prim2obj(value) ?? $createState(value);
+        const shadow = _prim2obj(value) ?? $createState(value, state, key);
 
         _eventify(shadow);
         Object.defineProperty(state, "__" + key, {
@@ -109,8 +122,7 @@ function $createState(target, parent=null) {
 
         Object.defineProperty(state, key, {
             set(newValue) {
-                // TODO: we are clearing listeners here. fix that :)
-                const stated = _eventify(_prim2obj(newValue) ?? $createState(newValue));
+                const stated = _eventify(_prim2obj(newValue) ?? $createState(newValue, state, key));
                 Object.defineProperty(state, "__" + key, { value: stated });
                 state["__" + key].dispatchEvent(new CustomEvent("$change"));
             },
