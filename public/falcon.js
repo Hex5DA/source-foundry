@@ -73,6 +73,8 @@ function _prim2obj(prim) {
     }
 }
 
+// function _prim2obj(prim) { return prim; }
+
 // var o = [..]
 // var h = { set(a) { console.log("setted: ", arguments); return Reflect.set(...arguments); } }
 // var p = new Proxy(o, h)
@@ -109,6 +111,12 @@ function _eventify(obj) {
     return obj; // TODO: maybe don't
 }
 
+// CODE SUMMARY
+// shortcircuit if code is not an object
+// create an evented-shadow object
+// re-route normal events to shadow object}
+// re-route event changed to 
+
 /*
 function $createState(target, parent=null, path=null) {
     if (!(target instanceof Object))
@@ -119,7 +127,7 @@ function $createState(target, parent=null, path=null) {
         const shadow = _prim2obj(value) ?? $createState(value, state, key);
 
         _eventify(shadow);
-        Object.defineProperty(state, "__" + key, {
+        Object.defineProperty(state, "__" +  key, {
             value: shadow,
             enumerable: false,
             configurable: true,
@@ -143,26 +151,43 @@ function $createState(target, parent=null, path=null) {
 }
 */
 
-function _proxify(target) {
+function _proxify(target, parent=null, path=null) {
+    console.log(target, path);
     return new Proxy(target, {
         set(obj, prop, value) {
             // console.log("SETTER: ", ...arguments);
+            console.log("SETTING ", prop);
             obj[prop].dispatchEvent(new CustomEvent("$change"));
-            return Reflect.set(...arguments);
+            const n = _proxify(_eventify(_prim2obj(value) ?? $createState(value, parent, path)));
+            console.log(n);
+            return Reflect.set(obj, prop, n);
+        },
+        get(target, key) {
+            if (!target.hasOwnProperty(key) && typeof target[key] === "function") {
+                return function(...args) {
+                    return target[key].call(target, args);
+                }
+            }
+            return target[key];
         }
     });
 }
 
+// why do some things only work on child objects??
+
 function $createState(target, parent=null, path=null) {
     for (const [key, entry] of Object.entries(target)) {
-        if (entry instanceof Object) {
-            target[key] = $createState(entry, target, key);
+        // const n = _proxify(_eventify(_prim2obj(entry) ?? $createState(entry, target, key)));
+        const n = _proxify(_eventify(_prim2obj(entry) ?? $createState(entry, target, key)), parent, key);
+
+        //if (entry instanceof Object) {
+            target[key] = n//$createState(entry, target, key);
             target.__parent = parent;
             target.__path = path;
-        }
+        //} 
     }
 
-    return _proxify(_eventify(target));
+    return target;
 }
 
 // TODO: look at using Object.setPrototypeOf(obj, EventTarget) instead of wrapping in EventTargets
