@@ -73,6 +73,10 @@ function _prim2obj(prim) {
     }
 }
 
+// var o = [..]
+// var h = { set(a) { console.log("setted: ", arguments); return Reflect.set(...arguments); } }
+// var p = new Proxy(o, h)
+
 window._stateEvents = {};
 
 function _hash(state) {
@@ -105,6 +109,7 @@ function _eventify(obj) {
     return obj; // TODO: maybe don't
 }
 
+/*
 function $createState(target, parent=null, path=null) {
     if (!(target instanceof Object))
         throw Error("can only create state on objects.");
@@ -136,9 +141,29 @@ function $createState(target, parent=null, path=null) {
 
     return state;
 }
+*/
 
-// NEW:
-// - define setters for everything 
+function _proxify(target) {
+    return new Proxy(target, {
+        set(obj, prop, value) {
+            // console.log("SETTER: ", ...arguments);
+            obj[prop].dispatchEvent(new CustomEvent("$change"));
+            return Reflect.set(...arguments);
+        }
+    });
+}
+
+function $createState(target, parent=null, path=null) {
+    for (const [key, entry] of Object.entries(target)) {
+        if (entry instanceof Object) {
+            target[key] = $createState(entry, target, key);
+            target.__parent = parent;
+            target.__path = path;
+        }
+    }
+
+    return _proxify(_eventify(target));
+}
 
 // TODO: look at using Object.setPrototypeOf(obj, EventTarget) instead of wrapping in EventTargets
 //       would mean the original object & properties are intact 
@@ -151,48 +176,16 @@ function $createState(target, parent=null, path=null) {
 // - events on sub-objects bubble up
 // - re-assigning the root value need not trigger an event
 
-// - recursive proxy
-// - ditch $state
-// ? batch updates (observableslim style - DOM manip)
-// ? events for CRUD
-
-// RECURSIVE PROXY
-// - if value is object:
-//   - proxy the object
-//   - if any properties are objects, recurse
-// - else:
-//   - proxy a dummy, invisible object
-
-// PROXY
-// - on set
-//   - if attribute exists, issue change event
-//   - if attriute does not exist, issue add event
-// ? on delete / on get
-
-// EVENTS
-// - every child object is an eventtarget
-// ? dummy proxies are eventtargets too
-
-// DUMMIES
-// - 
-
 function _event(target, eventName) {
     if (!target["addEventListener"]) throw Error("`$event` should only be called on objects with event support.");
 
-    let options = null;
     return {
         dispatch: function(event) {
             return target.dispatchEvent(event);
         },
-        remove: function(handler, options) {
-            target.removeEventListener(eventName, handler, options);
-        },
-        opts: function(opts) {
-            options = opts;
-        },
         /** @param {function(Event): void} handler */
         set on(handler) {
-            target.addEventListener(eventName, handler, options)
+            target.addEventListener(eventName, handler)
         }
     };
 }

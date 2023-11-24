@@ -9,10 +9,12 @@
 <script src="/public/falcon.js"></script>
 <script>
 window.$event("load").on = () => {
-    let state = $createState({ data: [ "praise shadow", "pet shadow", "walk shadow"] });
-    state.data.addEventListener("$change", () => console.log("changed", state));
+    // let state = $createState({ data: [ "praise shadow", "pet shadow", "walk shadow"] });
+    let state = $createState({ a: 100, b: { c: "hello world", d: [false, true] } });
+    state.b.addEventListener("$change", () => console.log("changed", state));
 
     console.log(state);
-    state.data.push("feed shadow");
+    state.b = {};
+    // state.data.push("feed shadow");
 }
 </script>
