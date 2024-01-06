@@ -84,7 +84,7 @@ window.$event("load").on = () => {
 $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
-    $("#heading").$template({ filename: server.slugs.filename ?? "<i>root</i>" });
+    $("#heading").$template({ filename: server.slugs.filename  }); // ?? "<i>root</i>"
 
     if (fs.statSync(filepath).isDirectory()) {
         $("#file").remove();
@@ -96,14 +96,12 @@ $objEvent(server, "load").on = async () => {
         const repo = git.simpleGit({ baseDir: repoPath });
     
         for (const entry of fs.readdirSync(filepath)) {
-            const { latest } = await repo.log({ file: `${filepath}/${entry}` });
+            const { latest } = await repo.log({ file: filepath + entry });
             if (!latest) continue; // TODO: wat
     
-            const entryPath = server.slugs.filename ? `${server.slugs.filename}/${entry}` : entry;
-            
             $("#row").$templateClone({
                 name: entry,
-                filename: `/repo/${server.slugs.name}/files/${entryPath}`,
+                filename: entry,
                 lastCommit: getFormattedTime(latest.date),
                 commitMessage: latest.message,
             }, {
