@@ -2,6 +2,9 @@
 
 a small, simple, idiomatic `git` frontend.
 
+regex
+1) \b__(?<catch>[a-zA-Z0-9]+).html?$|\b_([a-zA-Z0-9]+)
+
 ## bugs
 
 - can't load external resources

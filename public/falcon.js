@@ -52,21 +52,17 @@ Element.prototype.$templateClone = function(ctx, attrs = {}) {
     }
 }
 
-class $State extends EventTarget {
-    constructor(value) {
-        super();
-        this.value = value;
-    }
-}
-
+// TODO: look into `new Object([..])`
+//       see: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/Object>
 function _prim2obj(prim) {
     switch (typeof prim) {
         case "boolean": return new Boolean(prim);
         case "number": return new Number(prim);
         case "string": return new String(prim);
-        case "symbol": return new Symbol(prim);
-        case "bigint": return new BigInt(prim);
-        case "undefined": return undefined;
+        case "undefined":
+        case "bigint":
+        case "symbol":
+            return undefined;
         case "object":
         case "function":
             return null;
@@ -79,88 +75,59 @@ function _prim2obj(prim) {
 // var h = { set(a) { console.log("setted: ", arguments); return Reflect.set(...arguments); } }
 // var p = new Proxy(o, h)
 
-window._stateEvents = {};
+window._stateEvents = new Map();
 
 function _hash(state) {
     const hash = [state.__path ?? "root"];
+    console.log(hash, state.__path)
     let current = state;
     while (current.__parent && (current = current.__parent) !== null) {
+        console.log("current:", current, ".__path", current.__path)
         hash.push(current.__path ?? "root");
     }
+
     return hash.reverse().join("/");
 }
 
+/*
 function _eventify(obj) {
+    return obj;
+
     const id = _hash(obj);
-    if (!(id in window._stateEvents))
-        window._stateEvents[id] = new EventTarget();
+    console.log("eventing for ID:", id, "and object:", obj, "with path:", obj["__path"]);
+
+    if (!window._stateEvents.has(id))
+        window._stateEvents.set(id, new EventTarget());
 
     Object.defineProperties(obj, {
         addEventListener: {
             value: (...args) => {
-                window._stateEvents[id].addEventListener(...args);
-            }
+                window._stateEvents.get(id).addEventListener(...args);
+            },
+            configurable: true, // TODO: remove & fix source
         },
         dispatchEvent: {
             value: (...args) => {
-                window._stateEvents[id].dispatchEvent(...args);
-            }
+                console.log("dispatching event to:", id);
+                window._stateEvents.get(id).dispatchEvent(...args);
+            },
+            configurable: true,
         },
     });
 
     return obj; // TODO: maybe don't
 }
 
-// CODE SUMMARY
-// shortcircuit if code is not an object
-// create an evented-shadow object
-// re-route normal events to shadow object}
-// re-route event changed to 
-
-/*
-function $createState(target, parent=null, path=null) {
-    if (!(target instanceof Object))
-        throw Error("can only create state on objects.");
-
-    let state = { __parent: parent, __path: path };
-    for (let [key, value] of Object.entries(target)) {
-        const shadow = _prim2obj(value) ?? $createState(value, state, key);
-
-        _eventify(shadow);
-        Object.defineProperty(state, "__" +  key, {
-            value: shadow,
-            enumerable: false,
-            configurable: true,
-        });
-
-        Object.defineProperty(state, key, {
-            set(newValue) {
-                const stated = _eventify(_prim2obj(newValue) ?? $createState(newValue, state, key));
-                Object.defineProperty(state, "__" + key, { value: stated });
-                state["__" + key].dispatchEvent(new CustomEvent("$change"));
-            },
-            get() {
-                return state["__" + key];
-            },
-            enumerable: true,
-            configurable: true,
-        });
-    }
-
-    return state;
-}
-*/
-
 function _proxify(target, parent=null, path=null) {
-    console.log(target, path);
+    return target;
+
     return new Proxy(target, {
         set(obj, prop, value) {
-            // console.log("SETTER: ", ...arguments);
-            console.log("SETTING ", prop);
+            console.log("setting:", prop);
+            console.log("dispatching on:", obj[prop].dispatchEvent);
             obj[prop].dispatchEvent(new CustomEvent("$change"));
-            const n = _proxify(_eventify(_prim2obj(value) ?? $createState(value, parent, path)));
-            console.log(n);
-            return Reflect.set(obj, prop, n);
+            const stated = _prim2obj(value) ?? _createState(value, parent, path);
+            return Reflect.set(obj, prop, _proxify(_eventify(stated)));
         },
         get(target, key) {
             if (!target.hasOwnProperty(key) && typeof target[key] === "function") {
@@ -173,21 +140,82 @@ function _proxify(target, parent=null, path=null) {
     });
 }
 
-// why do some things only work on child objects??
+function _createState(target, parent=null, path=null) {
+    Object.defineProperty(target, "__parent", { value: null});
+    Object.defineProperty(target, "__path", { value: null});
 
-function $createState(target, parent=null, path=null) {
     for (const [key, entry] of Object.entries(target)) {
-        // const n = _proxify(_eventify(_prim2obj(entry) ?? $createState(entry, target, key)));
-        const n = _proxify(_eventify(_prim2obj(entry) ?? $createState(entry, target, key)), parent, key);
+        const evented = _eventify(_prim2obj(entry) ?? _createState(entry, target, key));
+        const proxy = _proxify(evented, parent, key);
 
-        //if (entry instanceof Object) {
-            target[key] = n//$createState(entry, target, key);
-            target.__parent = parent;
-            target.__path = path;
-        //} 
+        target[key] = proxy;
+        Object.defineProperty(target[key], "__path", { value: key });
+        Object.defineProperty(target[key], "__parent", { value: target });
+
+    }
+
+    // we must set this after because otherwise we will loop over them.
+
+    return target;
+}
+
+function $createState(target) {
+    return _proxify(_eventify(_createState(target)), null, null);
+}
+*/
+
+    /*
+function _ify(target) {
+
+
+    return target;
+}
+
+function $state(target) {
+    for (const [key, value] of Object.entries(target)) {
+        target[key] = _ify(_prim2obj(value) ?? $state(value));
+        target[key].__parent = target;
+        target[key].__path = key;
+    }
+
+    return _ify(target);
+}*/
+
+function _ify(target) {
+    const id = _hash(target);
+    console.log(target, "->", id);
+    console.log()
+
+    if (!window._stateEvents.has(id))
+        window._stateEvents.set(id, new EventTarget());
+
+    Object.defineProperties(target, {
+        msg: { value: "wow such cool" }
+    });
+
+
+    if (target.dbg) throw "BOLLOCKS";
+    target.dbg = true;
+
+    return target;
+    // return new Proxy(target, {});
+}
+
+function _state(target) {
+    for (const [key, value] of Object.entries(target)) {
+        target[key] = _prim2obj(value) ?? _state(value);
+        target[key].__parent = target;
+        target[key].__path = key;
+        target[key] = _ify(target[key]);
     }
 
     return target;
+}
+
+function $state(target) {
+    let state = _ify(_state(target));
+    state.__path = state.__parent = null;
+    return state;
 }
 
 // TODO: look at using Object.setPrototypeOf(obj, EventTarget) instead of wrapping in EventTargets
@@ -224,5 +252,5 @@ const _registerEvents = cls => cls.prototype.$event = function(eventName) { retu
 //_registerEvents(Window);
 //_registerEvents(HTMLElement);
 _registerEvents(EventTarget);
-_registerEvents($State);
+// _registerEvents($State);
 
