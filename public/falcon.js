@@ -254,3 +254,14 @@ const _registerEvents = cls => cls.prototype.$event = function(eventName) { retu
 _registerEvents(EventTarget);
 // _registerEvents($State);
 
+HTMLElement.prototype.$select = function(option) {
+    let found = false;
+    for (child of this.children) {
+        child.style.display = child.value === option ? "block" : "none";
+        found = true;
+    }
+
+    if (!found)
+        throw "`option` was listed";
+};
+

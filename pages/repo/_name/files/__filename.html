@@ -26,37 +26,38 @@
 </style>
 
 <h1 id="heading">[ filename ]</h1>
-<!-- FALCON: `if`/`else` classes -->
 
-<div id="file">
-    <input checked id="wrap" type="checkbox" />
-    <!-- on 1 line to prevent whitespace -->
-    <pre data-wrap="wrap" id="contents"><code>[ contents ]</code></pre>
-</div>
-<div id="dir">
-    <form>
-        <input id="query" type="search" placeholder="query" />
-        <button>search</button>
-    </form>
+<div id="testgroup">
+    <option value="dir">
+        <form>
+            <input id="query" type="search" placeholder="query" />
+            <button>search</button>
+        </form>
 
-    <figure>
-        <table>
-            <thead>
-                <tr>
-                    <th>name</th>
-                    <th>last commit</th>
-                    <th>commit message</th>
-                </tr>
-            </thead>
-            <tbody id="repos">
+        <figure>
+            <table>
+                <thead>
+                    <tr>
+                        <th>name</th>
+                        <th>last commit</th>
+                        <th>commit message</th>
+                    </tr>
+                </thead>
+                <tbody id="repos">
                 <tr id="row">
                     <td><a class="repo-name" href="[ filename ]">[ name ]</a></td>
                     <td class="row-date">[ lastCommit ]</td>
-                    <td>[ commitMessage ]</td>
-                </tr>
-            </tbody>
-        </table>
-    </figure>
+                        <td>[ commitMessage ]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </figure>
+    </option>
+    <option value="file">
+        <input checked id="wrap" type="checkbox" />
+        <!-- on 1 line to prevent whitespace -->
+        <pre data-wrap="wrap" id="contents"><code>[ contents ]</code></pre>
+    </option>
 </div>
 
 <link rel="stylesheet" href="/public/code.css">
@@ -85,9 +86,9 @@ $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
     $("#heading").$template({ filename: server.slugs.filename ?? "<i>root</i>" });
+    $("#testgroup").$select("dir");
 
     if (fs.statSync(filepath).isDirectory()) {
-        $("#file").remove();
         const { path, git } = server.imports;
 
         const gitRoot = "/home/0x5da/projects/";
@@ -113,7 +114,6 @@ $objEvent(server, "load").on = async () => {
     } else {
         const { fs, starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
         
-        $("#dir").remove();
         $("#heading").$template({ filename: server.slugs.filename });
         const contents = fs.readFileSync(filepath).toString();
     
