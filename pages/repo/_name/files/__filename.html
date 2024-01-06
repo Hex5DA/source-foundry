@@ -1,4 +1,7 @@
 <!-- @layout "default.html" -->
+<link rel="stylesheet" href="/public/code.css">
+<script src="/public/falcon.js"></script>
+<script src="/public/lib.js"></script>
 
 <style>
 #contents {
@@ -52,41 +55,38 @@
                 </tbody>
             </table>
         </figure>
+        <script>
+        $("#query").$event("input").on = ev => {
+            for (const row of $all("#repos > tr")) {
+                const name = row.getElementsByClassName("repo-name")[0].innerText;
+                row.style.display = row.id !== "row" && 
+                                    name.startsWith(ev.target.value) ? "table-row" : "none";
+            }
+        };
+        </script>
     </option>
     <option value="file">
         <input checked id="wrap" type="checkbox" />
         <!-- on 1 line to prevent whitespace -->
         <pre data-wrap="wrap" id="contents"><code>[ contents ]</code></pre>
+        <script>
+        window.$event("load").on = () => {
+            let wrap = false;
+            $("#wrap").$event("change").on = () => {
+                $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "nowrap" : "wrap");
+            };
+        };
+        </script>
     </option>
 </div>
 
-<link rel="stylesheet" href="/public/code.css">
-<script src="/public/lib.js"></script>
-<script src="/public/falcon.js"></script>
 <script>
-    /*
-window.$event("load").on = () => {
-    let wrap = false;
-    $("#wrap").$event("change").on = () => {
-        $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "nowrap" : "wrap");
-    };
-
-    $("#query").$event("input").on = ev => {
-        for (const row of $all("#repos > tr")) {
-            const name = row.getElementsByClassName("repo-name")[0].innerText;
-            row.style.display = row.id !== "row" && 
-                                name.startsWith(ev.target.value) ? "table-row" : "none";
-        }
-    };
-
-};
-    */
-
+// TODO: maybe refactor
 $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
     $("#heading").$template({ filename: server.slugs.filename ?? "<i>root</i>" });
-    $("#testgroup").$select("dir");
+    $("#testgroup").$select(fs.statSync(filepath).isDirectory() ? "dir" : "file");
 
     if (fs.statSync(filepath).isDirectory()) {
         const { path, git } = server.imports;

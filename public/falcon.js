@@ -255,6 +255,16 @@ _registerEvents(EventTarget);
 // _registerEvents($State);
 
 HTMLElement.prototype.$select = function(option) {
+    for (child of this.children) {
+        if (child.value != option)
+            child.remove();
+    }
+
+    if (!this.children.length)
+        throw "`option` was listed";
+};
+
+HTMLElement.prototype.$reselect = function(option) {
     let found = false;
     for (child of this.children) {
         child.style.display = child.value === option ? "block" : "none";
