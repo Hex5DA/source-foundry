@@ -238,7 +238,8 @@ function _event(target, eventName) {
         },
         /** @param {function(Event): void} handler */
         set on(handler) {
-            target.addEventListener(eventName, handler)
+            const defining = document.currentScript;
+            target.addEventListener(eventName, () => defining.isConnected && handler());
         }
     };
 }

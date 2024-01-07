@@ -26,11 +26,14 @@
     font-style: italic;
 }
 
+table {
+    width: 80vw;
+}
 </style>
 
 <h1 id="heading">[ filename ]</h1>
 
-<div id="testgroup">
+<div id="opt-container">
     <option value="dir">
         <form>
             <input id="query" type="search" placeholder="query" />
@@ -69,7 +72,7 @@
         <input checked id="wrap" type="checkbox" />
         <!-- on 1 line to prevent whitespace -->
         <pre data-wrap="wrap" id="contents"><code>[ contents ]</code></pre>
-        <script>
+        <script id="re">
         window.$event("load").on = () => {
             let wrap = false;
             $("#wrap").$event("change").on = () => {
@@ -81,14 +84,18 @@
 </div>
 
 <script>
-// TODO: maybe refactor
-$objEvent(server, "load").on = async () => {
+$objEvent(server, "load").on = async function s() {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
     $("#heading").$template({ filename: server.slugs.filename ?? "<i>root</i>" });
-    $("#testgroup").$select(fs.statSync(filepath).isDirectory() ? "dir" : "file");
+    const isDir = fs.statSync(filepath).isDirectory();
+    $("#opt-container").$select(isDir ? "dir" : "file");
 
-    if (fs.statSync(filepath).isDirectory()) {
+    // we can't just place these branches in script tags in their respective `option`s, because
+    //   we'd have to `$select` the correct branch here [at the bottom of the file], by which time *both* 
+    //   branches have had `load` event handlers registered. all work-arounds i found were worse than 1 if-else.
+    // NOTE: we can still have window events, though!
+    if (isDir) {
         const { path, git } = server.imports;
 
         const gitRoot = "/home/0x5da/projects/";
@@ -101,9 +108,9 @@ $objEvent(server, "load").on = async () => {
             if (!latest) continue; // TODO: wat
     
             const entryPath = server.slugs.filename ? `${server.slugs.filename}/${entry}` : entry;
-            
+            const isDir = fs.statSync(`${filepath}/${entry}`).isDirectory();
             $("#row").$templateClone({
-                name: entry,
+                name: entry + (isDir ? "/" : ""),
                 filename: `/repo/${server.slugs.name}/files/${entryPath}`,
                 lastCommit: getFormattedTime(latest.date),
                 commitMessage: latest.message,
@@ -113,10 +120,7 @@ $objEvent(server, "load").on = async () => {
         }
     } else {
         const { fs, starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
-        
-        $("#heading").$template({ filename: server.slugs.filename });
         const contents = fs.readFileSync(filepath).toString();
-    
         const st = await createStarryNight(langs);
         const scope = st.flagToScope(server.slugs.filename.split(".").pop());
         $("#contents").$template({ contents: scope ? hastToHtml(st.highlight(contents, scope)) : contents });
