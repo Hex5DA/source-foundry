@@ -238,8 +238,9 @@ function _event(target, eventName) {
         },
         /** @param {function(Event): void} handler */
         set on(handler) {
+            // do we want this behaviour?
             const defining = document.currentScript;
-            target.addEventListener(eventName, () => defining.isConnected && handler());
+            target.addEventListener(eventName, ev => defining.isConnected && handler(ev));
         }
     };
 }
