@@ -40,6 +40,10 @@ table {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+
+    --part: var(--fg);
+    --working: powderblue;
+    --delimiter: lightgrey;
 }
    
 #heading-cont > form {
@@ -121,7 +125,15 @@ table {
 $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
-    $("#heading").$template({ filename: server.slugs.filename ?? "<i>root</i>" });
+    const repoFilesPath = `/repo/${server.slugs.name}/files`
+    const filenameSafe = server.slugs.filename ?? "";
+
+    let cpath = repoFilesPath;
+    $("#heading").$template({ filename: filenameSafe
+        .split("/")
+        .map(part => `<a href="${cpath += '/' + part}" style=\"color: var(${filenameSafe.endsWith(part) ? "--working" : "--part"}\")>${part}</span>`)
+        .join("<span style=\"color: grey\">/</span>") });
+
     const isDir = fs.statSync(filepath).isDirectory();
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
@@ -145,7 +157,7 @@ $objEvent(server, "load").on = async () => {
             const isDir = fs.statSync(`${filepath}/${entry}`).isDirectory();
             $("#row").$templateClone({
                 name: entry + (isDir ? "/" : ""),
-                filename: `/repo/${server.slugs.name}/files/${entryPath}`,
+                filename: repoFilesPath + "/" + entryPath,
                 lastCommit: getFormattedTime(latest.date),
                 commitMessage: latest.message,
             }, {
