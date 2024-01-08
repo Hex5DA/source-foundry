@@ -43,9 +43,8 @@ Element.prototype.$retemplate = function(ctx) {
     this.style.display = "none";
 };
 
-Element.prototype.$templateClone = function(ctx, attrs = {}, inner=false) {
-    console.log(inner);
-    this.$html(HTMLPositions.afterEnd, _template((inner ? this.innerHTML : this.outerHTML), ctx));
+Element.prototype.$templateClone = function(ctx, attrs = {}) {
+    this.$html(HTMLPositions.afterEnd, _template(this.outerHTML, ctx));
     _removeIdentifiable(this.nextElementSibling);
     this.nextElementSibling.style.display = "revert";
     this.style.display = "none";
