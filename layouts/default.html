@@ -7,8 +7,9 @@
 
     <style>
     :root {
-        --page-width: 95vw;
-        --max-page-width: 95vw;
+        --skua-page-width: 80vw;
+        --skua-max-page-width: 80vw;
+        font-family: monospace;
     }
 
     header > a {
@@ -29,6 +30,11 @@
     #theme-switcher {
         height: 60%;
     }
+
+    main, main * {
+        max-width: var(--skua-max-page-width);
+    }
+
     </style>
     <script>
         let dark = true;
@@ -58,7 +64,7 @@
     </main>
 
     <footer>
-        made with <3 by <a href="https://0x5da.dev">0x5DA</a>
+        <p>made with <3 by <a href="https://0x5da.dev">0x5DA</a></p>
     </footer>
 </body>
 </html>

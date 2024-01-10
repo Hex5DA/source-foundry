@@ -4,32 +4,6 @@
 <script src="/public/lib.js"></script>
 
 <style>
-#contents {
-    white-space: pre;
-    border: 20px solid var(--a);
-    padding: 0;
-}
-
-#contents[data-wrap="nowrap"] {
-    overflow: scroll;
-}
-#contents[data-wrap="wrap"] {
-    white-space: pre-wrap;
-}
-
-.hidden-file {
-    color: grey;
-    font-style: italic;
-}
-
-.row-date {
-    font-style: italic;
-}
-
-table {
-    width: 80vw;
-}
-
 #heading-cont {
     margin-left: auto;
     margin-right: auto;
@@ -41,18 +15,30 @@ table {
     justify-content: space-around;
     align-items: center;
 
-    --part: var(--fg);
+    --part: var(--skua-foreground);
     --working: powderblue;
     --delimiter: lightgrey;
+}
+
+#backlink > code * {
+    text-decoration: none;
+    padding: 0 1px;
 }
    
 #heading-cont > form {
     margin: 0;
 }
+
+#heading-cont input {
+    border: var(--skua-foreground) 1px solid;   
+    background-color: var(--skua-accent);
+    font-family: monospace;
+    padding-left: 10px;
+}
 </style>
 
 <div id="heading-cont">
-    <h1 id="heading"><code>[ filename ]</code></h1>
+    <h1 id="backlink"><code>[ backlink ]</code></h1>
     <form class="path-opts" data-value="dir">
         <input id="query" type="search" placeholder="query" />
         <button>search</button>
@@ -89,6 +75,16 @@ table {
         };
     };
     </script>
+    <style>
+    .hidden-file {
+        color: grey;
+        font-style: italic;
+    }
+
+    .row-date {
+        font-style: italic;
+    }
+    </style>
 </option>
 <option class="path-opts" value="file">
     <!-- on 1 line to prevent whitespace -->
@@ -101,15 +97,36 @@ table {
     #wrap-wrapper {
         position: sticky;
         float: right;
-        bottom: 2vh;
+        bottom: 1vh;
 
         width: fit-content;
         margin: 2vh 0;
         padding: 8px;
 
-        border: var(--fg) solid 1px;
-        background: var(--a);
+        border: var(--skua-foreground) solid 1px;
+        background: var(--skua-accent);
         border-radius: 5px;
+    }
+
+    #contents {
+        whitespace: pre-wrap;
+    }
+
+    #contents > code * {
+        padding: unset;
+    }
+
+    #contents {
+        white-space: pre;
+        border: 20px solid var(--skua-accent);
+        padding: 0;
+    }
+
+    #contents[data-wrap="nowrap"] {
+        overflow: scroll;
+    }
+    #contents[data-wrap="wrap"], #contents:not([data-wrap]) {
+        white-space: pre-wrap;
     }
     </style>
     <script>
@@ -126,13 +143,18 @@ $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
     const repoFilesPath = `/repo/${server.slugs.name}/files`
-    const filenameSafe = server.slugs.filename ?? "";
+
 
     let cpath = repoFilesPath;
-    $("#heading").$template({ filename: filenameSafe
+    const root = `<a href=${repoFilesPath + "/"} style="color: var(--working)">/</a>`;
+    $("#backlink").$template({ backlink: root + ((server.slugs.filename ?? "")
         .split("/")
-        .map(part => `<a href="${cpath += '/' + part}" style=\"color: var(${filenameSafe.endsWith(part) ? "--working" : "--part"}\")>${part}</span>`)
-        .join("<span style=\"color: grey\">/</span>") });
+        .map(part => {
+            cpath += "/" + part;
+            const cssvar = (server.slugs.filename ?? "").endsWith(part) ? "working" : "part";
+            return `<a href="${cpath}" style="color: var(--${cssvar})">${part}</a>`;
+         })
+        .join("<span style=\"color: grey\">/</span>")) });
 
     const isDir = fs.statSync(filepath).isDirectory();
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
