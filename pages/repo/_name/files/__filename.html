@@ -16,7 +16,6 @@
 
     --part: var(--skua-foreground);
     --working: powderblue;
-    --delimiter: lightgrey;
 }
 
 #backlink > code * {
@@ -129,17 +128,59 @@
         white-space: pre-wrap;
     }
 
-    .lineno {
-        color: var(--delimiter);
+    .lineno, .lineno:visited {
+        color: var(--faint);
         font-style: italic;
+        text-decoration: none;
+    }
+
+    .lineno.selected {
+        color: var(--skua-foreground);
+        font-style: normal;
+        font-weight: bold;
+        text-shadow: 0 0 2px var(--skua-accent-inverted);
     }
     </style>
     <script>
+    let selected = [];
+    function frag() {
+        const frag = window.location.hash;
+        let digits = frag.match(/\d+/gm).map(n => Number.parseInt(n));
+        if (digits === null && digits.length >= 3) return;
+
+        // reset gutter
+        for (const el of selected)
+            el.classList.remove("selected");
+        selected = [];
+
+        for (const idx of Array((digits[1] ?? digits[0]) - digits[0] + 1).keys()) {
+            const el = $(`#L${digits[0] + idx}`);
+            el.classList.add("selected");
+            selected.push(el);
+        }
+    }
+
+    window.$event("hashchange").on = frag;
     window.$event("load").on = () => {
         $("#wrap").$event("change").on = () => {
             $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "wrap" : "nowrap");
         };
+
+        if (window.location.hash)
+            frag();
+
+        $all(".lineno").forEach(no => {
+            no.$event("click").on = ev => {
+                if (!ev.shiftKey) return;
+                ev.preventDefault();
+                // TODO: FIX:
+                // expanding range whilst having a range gives #L10-L23-L50
+                window.location.hash += `-${ev.target.id}`;
+                frag();
+            };
+        });
     };
+
     </script>
 </option>
 
@@ -159,7 +200,7 @@ $objEvent(server, "load").on = async () => {
             const cssvar = (server.slugs.filename ?? "").endsWith(part) ? "working" : "part";
             return `<a href="${cpath}" style="color: var(--${cssvar})">${part}</a>`;
          })
-        .join("<span style=\"color: grey\">/</span>")) });
+        .join("<span style=\"color: var(--faint)\">/</span>")) });
 
     const isDir = fs.statSync(filepath).isDirectory();
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
@@ -207,7 +248,7 @@ $objEvent(server, "load").on = async () => {
         let no = 1;
         const code = $("#contents code");
         const digits = (code.innerHTML.match(/^/gm) || []).length.toString().length;
-        code.innerHTML = code.innerHTML.replaceAll(/^/gm, () => `<span class="lineno">${(no++).toString().padStart(digits, "0")}</span>  `);
+        code.innerHTML = code.innerHTML.replaceAll(/^/gm, () => `<a target="_self" href="#L${no}" id="L${no}" class="lineno">${(no++).toString().padStart(digits, "0")}</a>  `);
     }
 };
 </script>

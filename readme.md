@@ -2,8 +2,13 @@
 
 a small, simple, idiomatic `git` frontend.
 
-regex
-1) \b__(?<catch>[a-zA-Z0-9]+).html?$|\b_([a-zA-Z0-9]+)
+## TODO
+
+- name and re-organise the TFF
+- investigate `atom` feeds
+- `event` changing
+- `falcon` testing
+- test / prune `falcon` function variants
 
 ## bugs
 
