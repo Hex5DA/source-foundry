@@ -7,20 +7,17 @@ regex
 
 ## bugs
 
-- can't load external resources
 - need `"`/`'` around directive paths
-- public directories shoudl be configurable
+- public directories should be configurable
 - `/layouts/default.html` -> `/default.html` (path roots)
 - if `server.onload` is blocking, the page will freeze. 
   > a [configurable] max timeout?
 - seperate `ssr` into own pkg (seperate from server again)
   >> can use as a library, ie. for `tern` or as binary, ie. for SSG
-  >> SSG: just change buoldsteps
+  >> SSG: just change buildsteps
           support github pages - github CI to rebuild on push!
-- change `skua` colours - darker background in dark mode, table themes?
-- ditch `skua` for `SRCFNDRY` (doesn't fit vibe - see `stagit`)
-- regex paths in `tern` - eg. file path as slug.
 - `skua` responsive forms / form styling
+- `tern-ssr` hardcores `url: "http:localhost:8080/"
 
 ## pipeline
 

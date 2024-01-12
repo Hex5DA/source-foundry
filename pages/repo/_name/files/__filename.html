@@ -1,6 +1,5 @@
 <!-- @layout "default.html" -->
 <link rel="stylesheet" href="/public/code.css">
-<script src="/public/falcon.js"></script>
 <script src="/public/lib.js"></script>
 
 <style>
@@ -109,10 +108,11 @@
     }
 
     #contents {
+        user-select: text;
         whitespace: pre-wrap;
     }
 
-    #contents > code * {
+    #contents > code *, #contents > code {
         padding: unset;
     }
 
@@ -128,6 +128,11 @@
     #contents[data-wrap="wrap"], #contents:not([data-wrap]) {
         white-space: pre-wrap;
     }
+
+    .lineno {
+        color: var(--delimiter);
+        font-style: italic;
+    }
     </style>
     <script>
     window.$event("load").on = () => {
@@ -142,7 +147,7 @@
 $objEvent(server, "load").on = async () => {
     const { fs } = server.imports;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
-    const repoFilesPath = `/repo/${server.slugs.name}/files`
+    const repoFilesPath = `/repo/${server.slugs.name}/files`;
 
 
     let cpath = repoFilesPath;
@@ -191,7 +196,18 @@ $objEvent(server, "load").on = async () => {
         const contents = fs.readFileSync(filepath).toString();
         const st = await createStarryNight(langs);
         const scope = st.flagToScope(server.slugs.filename.split(".").pop());
-        $("#contents").$template({ contents: scope ? hastToHtml(st.highlight(contents, scope)) : contents });
+        if (scope) {
+            const tree = st.highlight(contents, scope);
+            $("#contents").$template({ contents: hastToHtml(tree) });
+        } else  
+            $("#contents").$template({ contents: contents });
+        
+
+        // TODO $retemplate
+        let no = 1;
+        const code = $("#contents code");
+        const digits = (code.innerHTML.match(/^/gm) || []).length.toString().length;
+        code.innerHTML = code.innerHTML.replaceAll(/^/gm, () => `<span class="lineno">${(no++).toString().padStart(digits, "0")}</span>  `);
     }
 };
 </script>

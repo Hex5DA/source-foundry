@@ -4,6 +4,7 @@
     <title>sourcefoundry</title>
     <link rel="stylesheet" href="/public/skua.css" />
     <link href="data:," rel="icon">
+    <script src="/public/falcon.js"></script>
 
     <style>
     :root {
@@ -37,15 +38,18 @@
 
     </style>
     <script>
-        let dark = true;
+        function update(dark) {
+            const theme = $("#theme-switcher");
+            const html = $("html");
+            localStorage.setItem("theme", dark ? "dark" : "light");
+            html.setAttribute("data-theme", localStorage.getItem("theme"));
+            theme.innerText = localStorage.getItem("theme");
+        }
+
         window.addEventListener("load", () => {
-            const theme = document.getElementById("theme-switcher");
-            const html = document.getElementsByTagName("html")[0];
-            theme.onclick = () => {
-                dark = !dark;
-                html.setAttribute("data-theme", dark ? "dark" : "light");
-                theme.innerText = dark ? "dark" : "light";
-            };
+            let dark = (localStorage.getItem("theme") ?? "dark") === "dark";
+            update(dark);
+            $("#theme-switcher").onclick = () => update(dark = !dark);
         });
     </script>
 </head>

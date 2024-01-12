@@ -19,3 +19,4 @@ function getFormattedTime(time) {
         }
     }
 }
+
