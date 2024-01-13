@@ -132,6 +132,7 @@
         color: var(--faint);
         font-style: italic;
         text-decoration: none;
+        user-select: none;
     }
 
     .lineno.selected {
@@ -142,11 +143,19 @@
     }
     </style>
     <script>
+    function getFragBounds() {
+        const frag = window.location.hash;
+        let digits = frag.match(/\d+/gm);
+        if (digits === null) return null;
+        if (digits.length >= 3) digits = digits.slice(2);
+        return digits.map(n => Number.parseInt(n)).sort((a, b) => a - b);
+    }
+
     let selected = [];
     function frag() {
-        const frag = window.location.hash;
-        let digits = frag.match(/\d+/gm).map(n => Number.parseInt(n));
-        if (digits === null && digits.length >= 3) return;
+        const digits = getFragBounds();
+        if (digits === null) return;
+        console.log(digits);
 
         // reset gutter
         for (const el of selected)
@@ -173,9 +182,12 @@
             no.$event("click").on = ev => {
                 if (!ev.shiftKey) return;
                 ev.preventDefault();
-                // TODO: FIX:
-                // expanding range whilst having a range gives #L10-L23-L50
-                window.location.hash += `-${ev.target.id}`;
+                const digits = getFragBounds();
+                if (digits === null) return;
+
+                const target = ev.target.id.match(/\d+/)[0];
+                const newBounds = target < digits[0] ? [target, digits[1]] : [digits[0], target];
+                window.location.hash = `#L${newBounds[0]}-${newBounds[1]}`;
                 frag();
             };
         });
@@ -244,11 +256,12 @@ $objEvent(server, "load").on = async () => {
             $("#contents").$template({ contents: contents });
         
 
-        // TODO $retemplate
+        // TODO: $retemplate
         let no = 1;
         const code = $("#contents code");
         const digits = (code.innerHTML.match(/^/gm) || []).length.toString().length;
-        code.innerHTML = code.innerHTML.replaceAll(/^/gm, () => `<a target="_self" href="#L${no}" id="L${no}" class="lineno">${(no++).toString().padStart(digits, "0")}</a>  `);
+        /* :( */
+        code.innerHTML = code.innerHTML.replaceAll(/^/gm, () => `<a target="_self" href="#L${no}" id="L${no}" class="lineno">${(no++).toString().padStart(digits, "0")}</a><span style="user-select: none">  </span>`);
     }
 };
 </script>

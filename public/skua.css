@@ -8,10 +8,13 @@
     --skua-accent-dark: #0c0d0d;
 
     --skua-flair: var(--skua-foreground);
+    --skua-font: sans-serif;
     --skua-page-width: 90vw;
     --skua-max-page-width: 80ch;
+}
 
-    font-family: sans-serif;
+* {
+    font-family: var(--skua-font);
 }
 
 html[data-theme="dark"], :root {
