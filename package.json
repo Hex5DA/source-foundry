@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@speed-highlight/core": "^1.2.6",
     "@wooorm/starry-night": "^3.0.0",
     "hast-util-to-html": "^9.0.0",
     "simple-git": "^3.19.1"

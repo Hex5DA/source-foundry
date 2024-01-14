@@ -202,7 +202,6 @@ $objEvent(server, "load").on = async () => {
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
     const repoFilesPath = `/repo/${server.slugs.name}/files`;
 
-
     let cpath = repoFilesPath;
     const root = `<a href=${repoFilesPath + "/"} style="color: var(--working)">/</a>`;
     $("#backlink").$template({ backlink: root + ((server.slugs.filename ?? "")
@@ -214,6 +213,7 @@ $objEvent(server, "load").on = async () => {
          })
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
+    // TODO: this must be in git land
     const isDir = fs.statSync(filepath).isDirectory();
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
@@ -227,19 +227,24 @@ $objEvent(server, "load").on = async () => {
         const gitRoot = "/home/0x5da/projects/";
         const repoName = server.slugs.name;
         const repoPath = `${gitRoot}${repoName}`;
-        const repo = git.simpleGit({ baseDir: repoPath });
+
+        const dircontents = runSh(`git ls-tree --name-only HEAD ${filepath}`)
+            .split("\n")
+            .map(entry => entry.split("/").pop())
+            .filter(entry => entry);
     
-        for (const entry of fs.readdirSync(filepath)) {
-            const { latest } = await repo.log({ file: `${filepath}/${entry}` });
-            if (!latest) continue; // TODO: wat
+        for (const entry of dircontents) {
+            console.log(entry);
+            const relPath = server.slugs.filename ? `${server.slugs.filename}/${entry}` : entry;
+            if (!fs.existsSync(filepath + entry)) continue;
+            const [ time, message ] = runSh(`git log -n 1 --format="%ct%n%s" HEAD ${relPath}`).split("\n");
     
-            const entryPath = server.slugs.filename ? `${server.slugs.filename}/${entry}` : entry;
-            const isDir = fs.statSync(`${filepath}/${entry}`).isDirectory();
+            const isDir = fs.statSync(filepath + entry).isDirectory();
             $("#row").$templateClone({
                 name: entry + (isDir ? "/" : ""),
-                filename: repoFilesPath + "/" + entryPath,
-                lastCommit: getFormattedTime(latest.date),
-                commitMessage: latest.message,
+                filename: repoFilesPath + "/" + relPath,
+                lastCommit: getFormattedTime(new Date(time * 1000)), /* *1000 because JS counts in MS */
+                commitMessage: message,
             }, {
                 class: entry.startsWith(".") ? "hidden-file" : "",
             });

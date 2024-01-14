@@ -20,3 +20,14 @@ function getFormattedTime(time) {
     }
 }
 
+function runSh(command) {
+   return server.imports.execSync(command, (error, stdout, stderr) => {
+        if (error || stderr) {
+            console.warn(`error when trying to run ${command}.\nerror:${error.message}\nstderr:${stderr}`)
+            return "";
+        }
+
+        return stdout;
+   }).toString();
+}
+
