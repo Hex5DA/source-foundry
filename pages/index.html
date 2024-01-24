@@ -49,8 +49,8 @@ $objEvent(server, "load").on = async () => {
         const desc = descPath ? fs.readFileSync(descPath).toString() : null;
         const name = path.basename(repoPath);
 
-        const [ creationDate, author ] = runSh(`git --git-dir ${path.join(repoPath, ".git")} log --reverse --format="%ct%n%an" | head -1`).split("\n");
-        const lastCommitDate = runSh(`git --git-dir ${path.join(repoPath, ".git")} log -n 1 --format="%ct"`);
+        const [ creationDate, author ] = runGit(name, `log --reverse --format="%ct%n%an" | head -1`).split("\n");
+        const lastCommitDate = runGit(name, `log -n 1 --format="%ct"`);
 
         $("#row").$templateClone({
             name: name,

@@ -82,6 +82,10 @@
     .row-date {
         font-style: italic;
     }
+
+    tr a {
+        text-decoration: none;
+    }
     </style>
 </option>
 <option class="path-opts" value="file">
@@ -210,7 +214,7 @@ $objEvent(server, "load").on = async () => {
          })
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
-    const isDir = !filename || runSh(`git ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
+    const isDir = !filename || runGit(server.slugs.name, `ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
     // we can't just place these branches in script tags in their respective `option`s, because
@@ -218,16 +222,16 @@ $objEvent(server, "load").on = async () => {
     //   branches have had `load` event handlers registered. all work-arounds i found were worse than 1 if-else.
     // NOTE: we can still have window events, though!
     if (isDir) {
-        const filepathQual = filepath.endsWith("/") ? filepath : filepath + "/";
-        const dircontents = runShExtract(
-            `git ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} ${filepathQual}`,
+        const dircontents = runGitExtract(
+            server.slugs.name,
+            `ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} ${(filename ?? ".") + "/"}`,
             "path",
             "type"
         );
     
         for (const { path, type } of dircontents) {
-            // TODO: nned to get last commit date from range server.slugs.commit
-            const [ time, message ] = runSh(`git log -n 1 --format="%ct%n%s" ${server.slugs.commit} -- ${path}`).split("\n");
+            // TODO: need to get last commit date from range server.slugs.commit
+            const [ time, message ] = runGit(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit} -- ${path}`).split("\n");
     
             $("#row").$templateClone({
                 name: path + (type === "tree" ? "/" : ""),
@@ -239,9 +243,8 @@ $objEvent(server, "load").on = async () => {
             });
         }
     } else {
-        // TODO: git-ify
         const { starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
-        const contents = runSh(`git show ${server.slugs.commit}:${server.slugs.filename}`);
+        const contents = runGit(server.slugs.name, `show ${server.slugs.commit}:${server.slugs.filename}`);
         const st = await createStarryNight(langs);
         const scope = st.flagToScope(filename.split(".").pop());
         if (scope) {

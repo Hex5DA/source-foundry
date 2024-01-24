@@ -20,6 +20,8 @@ function getFormattedTime(time) {
     }
 }
 
+const GITROOT = "/home/0x5da/projects";
+
 function runSh(command) {
     return server.imports.execSync(command, (error, stdout, stderr) => {
         if (error || stderr) {
@@ -36,6 +38,13 @@ function runShExtract(command, ...props) {
         const parts = line.split(" ");
         return Object.assign({}, ...props.map((prop, idx) => ({ [prop]: parts[idx] })));
     });
+}
+
+function runGit(repo, command) {
+    return runSh(`git --git-dir ${GITROOT}/${repo}/.git ${command}`);
+}
+function runGitExtract(repo, command, ...props) {
+    return runShExtract(`git --git-dir ${GITROOT}/${repo}/.git ${command}`, ...props);
 }
 
 function stripEnd(str, pat) {
