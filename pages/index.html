@@ -47,25 +47,17 @@ $objEvent(server, "load").on = async () => {
     for (const repoPath of repos) {
         const descPath = exists(path.join(repoPath, ".git/description")) ?? exists(path.join(repoPath, "description"));
         const desc = descPath ? fs.readFileSync(descPath).toString() : null;
-        const repo = git.simpleGit({ baseDir: repoPath });
-
         const name = path.basename(repoPath);
-        let author, creationDate, lastCommit;
-        try {
-            const { all: commits, total, latest } = await repo.log();
-            creationDate = getFormattedTime(commits.at(-1).date);
-            author = commits.at(-1).author_name;
-            lastCommit = getFormattedTime(latest.date);
-        } catch {
-            author = creationDate = lastCommit = "<i>unknown</i>";
-        }
+
+        const [ creationDate, author ] = runSh(`git --git-dir ${path.join(repoPath, ".git")} log --reverse --format="%ct%n%an" | head -1`).split("\n");
+        const lastCommitDate = runSh(`git --git-dir ${path.join(repoPath, ".git")} log -n 1 --format="%ct"`);
 
         $("#row").$templateClone({
             name: name,
             description: desc ?? "<i>not provided</i>",
-            creationDate: creationDate,
-            lastCommit: lastCommit,
-            url: `/repo/${name}/`,
+            creationDate: getFormattedTime(new Date(creationDate * 1000)),
+            lastCommit: getFormattedTime(new Date(lastCommitDate * 1000)),
+            url: `/repo/${name}/master/HEAD/files/`,
         });
     }
 };

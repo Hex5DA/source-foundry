@@ -169,14 +169,11 @@
         }
     }
 
-    window.$event("hashchange").on = frag;
+    window.$event("hashchange", "load").on = () => window.location.hash && frag();
     window.$event("load").on = () => {
         $("#wrap").$event("change").on = () => {
             $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "wrap" : "nowrap");
         };
-
-        if (window.location.hash)
-            frag();
 
         $all(".lineno").forEach(no => {
             no.$event("click").on = ev => {
@@ -198,23 +195,22 @@
 
 <script>
 $objEvent(server, "load").on = async () => {
-    const { fs } = server.imports;
-    const filepath = `/home/0x5da/projects/${server.slugs.name}/${server.slugs.filename ?? ""}`;
-    const repoFilesPath = `/repo/${server.slugs.name}/files`;
+    const filename = server.slugs.filename;
+    const filepath = `/home/0x5da/projects/${server.slugs.name}/${filename ?? ""}`;
+    const repoFilesPath = `/repo/${server.slugs.name}/${server.slugs.branch}/${server.slugs.commit}/files`;
 
     let cpath = repoFilesPath;
     const root = `<a href=${repoFilesPath + "/"} style="color: var(--working)">/</a>`;
-    $("#backlink").$template({ backlink: root + ((server.slugs.filename ?? "")
+    $("#backlink").$template({ backlink: root + ((filename ?? "")
         .split("/")
         .map(part => {
             cpath += "/" + part;
-            const cssvar = (server.slugs.filename ?? "").endsWith(part) ? "working" : "part";
+            const cssvar = (filename ?? "").endsWith(part) ? "working" : "part";
             return `<a href="${cpath}" style="color: var(--${cssvar})">${part}</a>`;
          })
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
-    // TODO: this must be in git land
-    const isDir = fs.statSync(filepath).isDirectory();
+    const isDir = !filename || runSh(`git ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
     // we can't just place these branches in script tags in their respective `option`s, because
@@ -222,38 +218,32 @@ $objEvent(server, "load").on = async () => {
     //   branches have had `load` event handlers registered. all work-arounds i found were worse than 1 if-else.
     // NOTE: we can still have window events, though!
     if (isDir) {
-        const { path, git } = server.imports;
-
-        const gitRoot = "/home/0x5da/projects/";
-        const repoName = server.slugs.name;
-        const repoPath = `${gitRoot}${repoName}`;
-
-        const dircontents = runSh(`git ls-tree --name-only HEAD ${filepath}`)
-            .split("\n")
-            .map(entry => entry.split("/").pop())
-            .filter(entry => entry);
+        const filepathQual = filepath.endsWith("/") ? filepath : filepath + "/";
+        const dircontents = runShExtract(
+            `git ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} ${filepathQual}`,
+            "path",
+            "type"
+        );
     
-        for (const entry of dircontents) {
-            console.log(entry);
-            const relPath = server.slugs.filename ? `${server.slugs.filename}/${entry}` : entry;
-            if (!fs.existsSync(filepath + entry)) continue;
-            const [ time, message ] = runSh(`git log -n 1 --format="%ct%n%s" HEAD ${relPath}`).split("\n");
+        for (const { path, type } of dircontents) {
+            // TODO: nned to get last commit date from range server.slugs.commit
+            const [ time, message ] = runSh(`git log -n 1 --format="%ct%n%s" ${server.slugs.commit} -- ${path}`).split("\n");
     
-            const isDir = fs.statSync(filepath + entry).isDirectory();
             $("#row").$templateClone({
-                name: entry + (isDir ? "/" : ""),
-                filename: repoFilesPath + "/" + relPath,
-                lastCommit: getFormattedTime(new Date(time * 1000)), /* *1000 because JS counts in MS */
+                name: path + (type === "tree" ? "/" : ""),
+                filename: repoFilesPath + "/" + path,
+                lastCommit: getFormattedTime(new Date(time * 1000)), // *1000 because JS wants ms
                 commitMessage: message,
             }, {
-                class: entry.startsWith(".") ? "hidden-file" : "",
+                class: path.startsWith(".") ? "hidden-file" : "",
             });
         }
     } else {
+        // TODO: git-ify
         const { fs, starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
         const contents = fs.readFileSync(filepath).toString();
         const st = await createStarryNight(langs);
-        const scope = st.flagToScope(server.slugs.filename.split(".").pop());
+        const scope = st.flagToScope(filename.split(".").pop());
         if (scope) {
             const tree = st.highlight(contents, scope);
             $("#contents").$template({ contents: hastToHtml(tree) });
