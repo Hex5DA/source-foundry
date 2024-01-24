@@ -240,8 +240,8 @@ $objEvent(server, "load").on = async () => {
         }
     } else {
         // TODO: git-ify
-        const { fs, starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
-        const contents = fs.readFileSync(filepath).toString();
+        const { starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
+        const contents = runSh(`git show ${server.slugs.commit}:${server.slugs.filename}`);
         const st = await createStarryNight(langs);
         const scope = st.flagToScope(filename.split(".").pop());
         if (scope) {
