@@ -30,6 +30,42 @@
     font-family: monospace;
     padding-left: 10px;
 }
+
+#content-container {
+    display: flex;
+    gap: 30px;
+    height: max-content;
+}
+
+#commits {
+    margin: 0;
+    padding: 5px;
+    resize: horizontal;
+    background-color: var(--skua-accent);
+    overflow: scroll;
+    width: 15vw;
+    max-width: 30vw;
+    border: 5px solid var(--skua-accent);
+}
+
+#commits h3 {
+    margin-top: 0;
+}
+
+#commits ul {
+    padding-left: inherit;
+    width: min-content;
+}
+
+#commits .name {
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+#commits .details {
+    font-style: italic;
+    float: right;
+}
 </style>
 
 <div id="heading-cont">
@@ -40,160 +76,170 @@
     </form>
 </div>
 
-<option class="path-opts" value="dir">
-    <figure>
-        <table>
-            <thead>
-                <tr>
-                    <th>name</th>
-                    <th>last commit</th>
-                    <th>commit message</th>
-                </tr>
-            </thead>
-            <tbody id="repos">
-                <tr id="row">
-                    <td><a class="repo-name" href="[ filename ]">[ name ]</a></td>
-                    <td class="row-date">[ lastCommit ]</td>
-                    <td>[ commitMessage ]</td>
-                </tr>
-            </tbody>
-        </table>
-    </figure>
-    <script>
-    window.$event("load").on = () => {
-        $("#query").$event("input").on = ev => {
-            for (const row of $all("#repos > tr")) {
-                const name = row.getElementsByClassName("repo-name")[0].innerText;
-                row.style.display = row.id !== "row" && 
-                                    name.startsWith(ev.target.value) ? "table-row" : "none";
-            }
-        };
-    };
-    </script>
-    <style>
-    .hidden-file {
-        color: grey;
-        font-style: italic;
-    }
-
-    .row-date {
-        font-style: italic;
-    }
-
-    tr a {
-        text-decoration: none;
-    }
-
-    figure {
-        margin: 0;
-    }
-    </style>
-</option>
-<option class="path-opts" value="file">
-    <!-- on 1 line to prevent whitespace -->
-    <pre data-wrap="nowrap" id="contents"><code>[ contents ]</code></pre>
-    <div id="wrap-wrapper">
-        <input id="wrap" type="checkbox" />
-        <label for="wrap">enable wrapping</label>
+<div id="content-container">
+    <div id="commits">
+        <h3>commits</h3>
+        <ul>
+            <li>
+                <a class="name" href="[ link ]">"[ name ]"</a>
+                <a class="details" href="#">details</a>
+            </li>
+        </ul>
     </div>
-    <style>
-    #wrap-wrapper {
-        position: sticky;
-        float: right;
-        bottom: 1vh;
-
-        width: fit-content;
-        margin: 2vh 0;
-        padding: 8px;
-
-        border: var(--skua-foreground) solid 1px;
-        background: var(--skua-accent);
-        border-radius: 5px;
-    }
-
-    #contents {
-        user-select: text;
-        whitespace: pre-wrap;
-    }
-
-    #contents > code *, #contents > code {
-        padding: unset;
-    }
-
-    #contents {
-        white-space: pre;
-        border: 20px solid var(--skua-accent);
-        padding: 0;
-    }
-
-    #contents[data-wrap="nowrap"] {
-        overflow: scroll;
-    }
-    #contents[data-wrap="wrap"], #contents:not([data-wrap]) {
-        white-space: pre-wrap;
-    }
-
-    .lineno, .lineno:visited {
-        color: var(--faint);
-        font-style: italic;
-        text-decoration: none;
-        user-select: none;
-    }
-
-    .lineno.selected {
-        color: var(--skua-foreground);
-        font-style: normal;
-    }
-    </style>
-    <script>
-    function getFragBounds() {
-        const frag = window.location.hash;
-        let digits = frag.match(/\d+/gm);
-        if (digits === null) return null;
-        if (digits.length >= 3) digits = digits.slice(2);
-        return digits.map(n => Number.parseInt(n)).sort((a, b) => a - b);
-    }
-
-    let selected = [];
-    function frag() {
-        const digits = getFragBounds();
-        if (digits === null) return;
-
-        // reset gutter
-        for (const el of selected)
-            el.classList.remove("selected");
-        selected = [];
-
-        for (const idx of Array((digits[1] ?? digits[0]) - digits[0] + 1).keys()) {
-            const el = $(`#L${digits[0] + idx}`);
-            el.classList.add("selected");
-            selected.push(el);
-        }
-    }
-
-    window.$event("hashchange", "load").on = () => window.location.hash && frag();
-    window.$event("load").on = () => {
-        $("#wrap").$event("change").on = () => {
-            $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "wrap" : "nowrap");
-        };
-
-        $all(".lineno").forEach(no => {
-            no.$event("click").on = ev => {
-                if (!ev.shiftKey) return;
-                ev.preventDefault();
+    <option class="path-opts" value="dir">
+        <figure>
+            <table>
+                <thead>
+                    <tr>
+                        <th>name</th>
+                        <th>last commit</th>
+                        <th>commit message</th>
+                    </tr>
+                </thead>
+                <tbody id="repos">
+                    <tr id="row">
+                        <td><a class="repo-name" href="[ filename ]">[ name ]</a></td>
+                        <td class="row-date">[ lastCommit ]</td>
+                        <td>[ commitMessage ]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </figure>
+        <script>
+            window.$event("load").on = () => {
+                $("#query").$event("input").on = ev => {
+                    for (const row of $all("#repos > tr")) {
+                        const name = row.getElementsByClassName("repo-name")[0].innerText;
+                        row.style.display = row.id !== "row" && 
+                                            name.startsWith(ev.target.value) ? "table-row" : "none";
+                    }
+                };
+            };
+        </script>
+        <style>
+            .hidden-file {
+                color: grey;
+                font-style: italic;
+            }
+        
+            .row-date {
+                font-style: italic;
+            }
+        
+            tr a {
+                text-decoration: none;
+            }
+        
+            figure {
+                margin: 0;
+            }
+        </style>
+    </option>
+    <option class="path-opts" value="file">
+        <!-- on 1 line to prevent whitespace -->
+        <pre data-wrap="nowrap" id="contents"><code>[ contents ]</code></pre>
+        <div id="wrap-wrapper">
+            <input id="wrap" type="checkbox" />
+            <label for="wrap">enable wrapping</label>
+        </div>
+        <style>
+            #wrap-wrapper {
+                position: sticky;
+                float: right;
+                bottom: 1vh;
+        
+                width: fit-content;
+                margin: 2vh 0;
+                padding: 8px;
+        
+                border: var(--skua-foreground) solid 1px;
+                background: var(--skua-accent);
+                border-radius: 5px;
+            }
+        
+            #contents {
+                user-select: text;
+                whitespace: pre-wrap;
+            }
+        
+            #contents > code *, #contents > code {
+                padding: unset;
+            }
+        
+            #contents {
+                white-space: pre;
+                border: 20px solid var(--skua-accent);
+                padding: 0;
+            }
+        
+            #contents[data-wrap="nowrap"] {
+                overflow: scroll;
+            }
+            #contents[data-wrap="wrap"], #contents:not([data-wrap]) {
+                white-space: pre-wrap;
+            }
+        
+            .lineno, .lineno:visited {
+                color: var(--faint);
+                font-style: italic;
+                text-decoration: none;
+                user-select: none;
+            }
+        
+            .lineno.selected {
+                color: var(--skua-foreground);
+                font-style: normal;
+            }
+        </style>
+        <script>
+            function getFragBounds() {
+                const frag = window.location.hash;
+                let digits = frag.match(/\d+/gm);
+                if (digits === null) return null;
+                if (digits.length >= 3) digits = digits.slice(2);
+                return digits.map(n => Number.parseInt(n)).sort((a, b) => a - b);
+            }
+        
+            let selected = [];
+            function frag() {
                 const digits = getFragBounds();
                 if (digits === null) return;
-
-                const target = ev.target.id.match(/\d+/)[0];
-                const newBounds = target < digits[0] ? [target, digits[1]] : [digits[0], target];
-                window.location.hash = `#L${newBounds[0]}-${newBounds[1]}`;
-                frag();
+        
+                // reset gutter
+                for (const el of selected)
+                    el.classList.remove("selected");
+                selected = [];
+        
+                for (const idx of Array((digits[1] ?? digits[0]) - digits[0] + 1).keys()) {
+                    const el = $(`#L${digits[0] + idx}`);
+                    el.classList.add("selected");
+                    selected.push(el);
+                }
+            }
+        
+            window.$event("hashchange", "load").on = () => window.location.hash && frag();
+            window.$event("load").on = () => {
+                $("#wrap").$event("change").on = () => {
+                    $("#contents").setAttribute("data-wrap", $("#wrap").checked ? "wrap" : "nowrap");
+                };
+        
+                $all(".lineno").forEach(no => {
+                    no.$event("click").on = ev => {
+                        if (!ev.shiftKey) return;
+                        ev.preventDefault();
+                        const digits = getFragBounds();
+                        if (digits === null) return;
+        
+                        const target = ev.target.id.match(/\d+/)[0];
+                        const newBounds = target < digits[0] ? [target, digits[1]] : [digits[0], target];
+                        window.location.hash = `#L${newBounds[0]}-${newBounds[1]}`;
+                        frag();
+                    };
+                });
             };
-        });
-    };
-
-    </script>
-</option>
+        </script>
+    </option>
+</div>
 
 <script>
 $objEvent(server, "load").on = async () => {
@@ -215,6 +261,8 @@ $objEvent(server, "load").on = async () => {
     const isDir = !filename || runGit(server.slugs.name, `ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
+    // TODO: commit deets :)
+
     // we can't just place these branches in script tags in their respective `option`s, because
     //   we'd have to `$select` the correct branch here [at the bottom of the file], by which time *both* 
     //   branches have had `load` event handlers registered. all work-arounds i found were worse than 1 if-else.
@@ -230,7 +278,7 @@ $objEvent(server, "load").on = async () => {
         for (const { path, type } of dircontents) {
             let [ time, message ] = 
                 runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^ -- ${path}`)
-            // if the entry was added in tis commit
+            // if the entry was added in this commit
             if (!time || !message)
                 [ time, message ] = 
                     runGitLines(server.slugs.name, `show --format="%ct%n%s" ${server.slugs.commit} -- ${path}`)
