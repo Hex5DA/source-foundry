@@ -27,7 +27,6 @@
     </table>
 </figure>
 
-<script src="/public/lib.js"></script>
 <script>
 $objEvent(server, "load").on = async () => {
     const { fs, path, git } = server.imports;
@@ -57,7 +56,7 @@ $objEvent(server, "load").on = async () => {
             description: desc ?? "<i>not provided</i>",
             creationDate: getFormattedTime(new Date(creationDate * 1000)),
             lastCommit: getFormattedTime(new Date(lastCommitDate * 1000)),
-            url: `/repo/${name}/master/HEAD/files/`,
+            url: `/repo/${name}/`,
         });
     }
 };

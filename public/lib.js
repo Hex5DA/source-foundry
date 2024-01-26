@@ -40,12 +40,9 @@ function runShExtract(command, ...props) {
     });
 }
 
-function runGit(repo, command) {
-    return runSh(`git --git-dir ${GITROOT}/${repo}/.git ${command}`);
-}
-function runGitExtract(repo, command, ...props) {
-    return runShExtract(`git --git-dir ${GITROOT}/${repo}/.git ${command}`, ...props);
-}
+const runGit = (repo, command) => runSh(`git --git-dir ${GITROOT}/${repo}/.git ${command}`);
+const runGitLines = (repo, command) => runGit(repo, command).split("\n").filter(line => line);
+const runGitExtract = (repo, command, ...props) => runShExtract(`git --git-dir ${GITROOT}/${repo}/.git ${command}`, ...props);
 
 function stripEnd(str, pat) {
     return (str ?? "").endsWith(pat) ? str.replace(pat, "") : str;

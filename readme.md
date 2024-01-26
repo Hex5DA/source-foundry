@@ -4,11 +4,11 @@ a small, simple, idiomatic `git` frontend.
 
 ## TODO
 
-- name and re-organise the TFF
+- TODO: test branches. i think they're a little (a lot) fucky
+- collapse directories
+- text format parser and "standard"
 - investigate `atom` feeds
-- `event` changing
-- `falcon` testing
-- test / prune `falcon` function variants
+- [`falcon`] test framework
 
 ## bugs
 
@@ -31,71 +31,4 @@ a small, simple, idiomatic `git` frontend.
 3. [minify `dist/`](https://github.com/wilsonzlin/minify-html)
 4. [cull CSS (read: `skua`)](https://github.com/purifycss/purifycss)
 5. `tern`
-
-## simple text format
-
-to continue a line, write on a new,
-  indented line.
-this line will be rendered beneath the other.
-
-this line will be rendered with a 1 line gap.
-
-a list is written with 1 arbritrary character, followed by a space
-- so this
-! this
-* and this are all valid.
-
-all are valid but hold differing semantics.
-newlines work the same in list items, too (just offset):
-- this is
-    all on 1 line
-  whereas this is on another line, but in the same point
-- now this is another bullet point
-
-headings are written between dash characters. the number of characters on each
-  side is ignored, and different characters give different orders of headings.
-
-=== HIGH-ORDER HEADING ===
-
-by convention, there is only 1 per document and it is written
-  in ALL CAPS
-
-- low order heading -
-
-a parser may also wish to take note of prefixes.
-prefixes are ALL-CAPS words followed by a colon, usually at the beginning of sentences
-  or punctuation like brackets.
-eg.
-TODO: NTS: FIX: NOTE: LINK:
-
-an inline quote is written between >>/<<s, like so:
-regular text >> quoted text << and more regular text
-
-a block quote is written like so
->>> long, multine quotes go like
-    so. indentation before the
-    closing << doesn't matter     <<<
-    ~ me, 2024
-
-by semantics, attribution is denoted via a `~` character.
-
-"verbatim blocks" are denoted with 3 backticks (`)s 
-a format specifier may optionally follow.
-
-```python
-print("fancy!")
-```
-
-or can be inlined using singular backticks `like so`.
-verbatim blocks should be rendered in a monospace font.
-
-asterisks denote *bold*.
-underscores denote _italics_.
-
-as a matter of style, '' is preferred over "".
-
-pair-value texts can be expressed like such, where values
-  should be aligned (irrespective of alignment in the source).
-
-TODO: tables?
 

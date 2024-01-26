@@ -1,6 +1,5 @@
 <!-- @layout "default.html" -->
 <link rel="stylesheet" href="/public/code.css">
-<script src="/public/lib.js"></script>
 
 <style>
 #heading-cont {
@@ -229,9 +228,13 @@ $objEvent(server, "load").on = async () => {
         );
     
         for (const { path, type } of dircontents) {
-            // TODO: need to get last commit date from range server.slugs.commit
-            const [ time, message ] = runGit(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit} -- ${path}`).split("\n");
-    
+            let [ time, message ] = 
+                runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^ -- ${path}`)
+            // if the entry was added in tis commit
+            if (!time || !message)
+                [ time, message ] = 
+                    runGitLines(server.slugs.name, `show --format="%ct%n%s" ${server.slugs.commit} -- ${path}`)
+
             $("#row").$templateClone({
                 name: path + (type === "tree" ? "/" : ""),
                 filename: repoFilesPath + "/" + path,

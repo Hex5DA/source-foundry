@@ -1,3 +1,52 @@
 <!-- @layout "default.html" -->
-<h1>lol</h1>
-<a href="master/head/files/">just click me</a>
+
+<style>
+#lists-container {
+    width: 60vw;
+    margin: 2vh auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#lists-container ul {
+    background-color: var(--skua-accent);
+    width: 20vw;
+    min-height: 20vw;
+    padding-top: 15px;
+}
+</style>
+
+<div id="lists-container">
+    <div>
+        <h2>branches</h2>
+        <ul id="branches">
+            <li id="branch-template"><a href="[ branch ]/HEAD/files/">[ branch ]</a></li>
+        </ul>
+    </div>
+    <div>
+        <h2>tags</h2>
+        <ul id="tags">
+            <li id="tag-template"><a href="[ defbranch ]/[ tagCommit ]/files/">[ tag ]</a></li>
+        </ul>
+    </div>
+</div>
+
+<script>
+$objEvent(server, "load").on = () => {
+    const branches = runGitLines(server.slugs.name, "branch").map(line => line.slice(2));
+    if (!branches.length) $("#branch-template").remove();
+    else branches.forEach(br => $("#branch-template").$templateClone({ branch: br }));
+
+    const tags = runGitLines(server.slugs.name, "tag");
+    if (!tags.length) $("#tag-template").remove();
+    else tags.forEach(tag => {
+        const commit = runGit(server.slugs.name, `rev-list -n 1 ${tag}`);
+        $("#tag-template").$templateClone({
+            tag: tag,
+            defbranch: "master", // TODO: find the default name
+            tagCommit: commit,
+        });
+    });
+};
+</script>
