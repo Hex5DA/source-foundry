@@ -8,11 +8,16 @@
 
     <style>
     :root {
-        --skua-page-width: 80vw;
-        --skua-max-page-width: 80vw;
-        --skua-font: monospace;
+        --skua-page-width: 90vw;
+        --skua-max-page-width: 90vw;
 
         --faint: #393939;
+        font-family: monospace;
+        font-size: 14px;
+    }
+
+    header {
+        border-bottom: solid 1px var(--skua-foreground);
     }
 
     header > a {
@@ -37,31 +42,11 @@
     main, main * {
         max-width: var(--skua-max-page-width);
     }
-
     </style>
-    <script>
-        function update(dark) {
-            const theme = $("#theme-switcher");
-            const html = $("html");
-            localStorage.setItem("theme", dark ? "dark" : "light");
-            html.setAttribute("data-theme", localStorage.getItem("theme"));
-            theme.innerText = localStorage.getItem("theme");
-        }
-
-        window.addEventListener("load", () => {
-            let dark = (localStorage.getItem("theme") ?? "dark") === "dark";
-            update(dark);
-            $("#theme-switcher").onclick = () => update(dark = !dark);
-        });
-    </script>
 </head>
 <body>
     <header>
-        <div>
-            <h1>SRCFOUNDRY</h1>     
-            <button id="theme-switcher">dark</button>
-        </div>
-
+        <h1>SRCFNDRY</h1>     
         <a href="/">home</a>
     </header>
 

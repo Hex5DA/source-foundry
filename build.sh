@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+echo "building..."
+
 # rebuild smew
 #cd ../rtc/smew
 #cargo build

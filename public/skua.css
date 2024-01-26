@@ -8,13 +8,22 @@
     --skua-accent-dark: #0c0d0d;
 
     --skua-flair: var(--skua-foreground);
-    --skua-font: sans-serif;
     --skua-page-width: 90vw;
     --skua-max-page-width: 80ch;
+
+    background-color: var(--skua-background);
+    color: var(--skua-foreground);
+
+    font-family: sans-serif;
+    line-height: 1.6;
+    font-size: 18px;
 }
 
-* {
-    font-family: var(--skua-font);
+/* why do i need to do this? fuck if i know */
+
+button, input, label {
+    background-color: unset;
+    color: unset;
 }
 
 html[data-theme="dark"], :root {
@@ -48,14 +57,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-
-/* HACK: tables were being a PITA. bandaid fix */
-*:not(table *) {
-    background-color: var(--skua-background);
-    color: var(--skua-foreground);
-    line-height: 1.6;
-    font-size: 19px;
-}   
 
 h1, h2 {
     line-height: 1.8;

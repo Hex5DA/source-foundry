@@ -4,14 +4,12 @@
 
 <style>
 #heading-cont {
-    margin-left: auto;
-    margin-right: auto;
-    margin: 2vh auto;
+    width: 100%;
+    margin: 2vh 0;
 
-    width: 80vw;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
 
     --part: var(--skua-foreground);
@@ -86,6 +84,10 @@
     tr a {
         text-decoration: none;
     }
+
+    figure {
+        margin: 0;
+    }
     </style>
 </option>
 <option class="path-opts" value="file">
@@ -142,8 +144,6 @@
     .lineno.selected {
         color: var(--skua-foreground);
         font-style: normal;
-        font-weight: bold;
-        text-shadow: 0 0 2px var(--skua-accent-inverted);
     }
     </style>
     <script>
@@ -159,7 +159,6 @@
     function frag() {
         const digits = getFragBounds();
         if (digits === null) return;
-        console.log(digits);
 
         // reset gutter
         for (const el of selected)

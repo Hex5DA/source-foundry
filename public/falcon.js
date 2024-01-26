@@ -104,6 +104,6 @@ function $objEvent(target, ...eventNames) {
 }
 
 EventTarget.prototype.$event = function (...eventNames) {
-    return $objEvent(this, eventNames);
+    return $objEvent(this, ...eventNames);
 };
 

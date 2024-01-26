@@ -75,7 +75,7 @@ a block quote is written like so
 >>> long, multine quotes go like
     so. indentation before the
     closing << doesn't matter     <<<
-    ~ me, 2022
+    ~ me, 2024
 
 by semantics, attribution is denoted via a `~` character.
 
@@ -96,11 +96,6 @@ as a matter of style, '' is preferred over "".
 
 pair-value texts can be expressed like such, where values
   should be aligned (irrespective of alignment in the source).
-
-'some term' some value 
-'2nd term'  2nd value
-'another' should still be aligned, despite the values not
-            matching up in the source.
 
 TODO: tables?
 
