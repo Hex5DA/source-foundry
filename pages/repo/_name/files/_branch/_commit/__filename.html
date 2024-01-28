@@ -33,23 +33,42 @@
 
 #content-container {
     display: flex;
+    flex-direction: row;
     gap: 30px;
-    height: max-content;
+
+    max-height: 100%;
+    max-width: 100%;
+}
+
+#content-container option {
+    min-width: 20vw;
+    width: 100%;
 }
 
 #commits {
+    padding: 0 5px 5px 15px;
     margin: 0;
-    padding: 5px;
-    resize: horizontal;
+
     background-color: var(--skua-accent);
-    overflow: scroll;
-    width: 15vw;
-    max-width: 30vw;
     border: 5px solid var(--skua-accent);
+
+    resize: horizontal;
+    overflow: scroll;
+    flex-grow: 1;
+
+    width: 15vw;
+    min-width: 10vw;
+    max-width: 30vw;
+    max-height: 75vh;
 }
 
 #commits h3 {
     margin-top: 0;
+    position: sticky;
+    top: 0;
+    background-color: var(--skua-accent);
+    padding: 5px;
+    width: 100%;
 }
 
 #commits ul {
@@ -62,16 +81,36 @@
     text-decoration: none;
 }
 
-#commits .details {
+.details, .details *  {
+    padding: 1px 0 4px;
+    color: var(--faint);
+
     font-style: italic;
-    float: right;
+    text-decoration: none;
+    line-height: 0.9;
+    font-size: 0.9rem;
+}
+
+.details a:visited {
+    color: inherit;
+}
+
+.commit-container {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+}
+
+#current-commit {
+    font-weight: bold;
+    font-size: 115%;
 }
 </style>
 
 <div id="heading-cont">
     <h1 id="backlink"><code>[ backlink ]</code></h1>
     <form class="path-opts" data-value="dir">
-        <input id="query" type="search" placeholder="query" />
+        <input id="query" type="search" placeholder="filter" />
         <button>search</button>
     </form>
 </div>
@@ -80,9 +119,11 @@
     <div id="commits">
         <h3>commits</h3>
         <ul>
-            <li>
-                <a class="name" href="[ link ]">"[ name ]"</a>
-                <a class="details" href="#">details</a>
+            <li id="commit-template">
+                <div class="commit-container">
+                    <a class="name" href="[ revLink ]">"[ msg ]"</a>
+                    <div class="details"><a href="[ detailsLink ]">details</a> &#149; [ time ]</div>
+                </div>
             </li>
         </ul>
     </div>
@@ -157,25 +198,22 @@
                 border-radius: 5px;
             }
         
-            #contents {
-                user-select: text;
-                whitespace: pre-wrap;
-            }
-        
             #contents > code *, #contents > code {
                 padding: unset;
             }
         
             #contents {
-                white-space: pre;
-                border: 20px solid var(--skua-accent);
+                margin: 0;
                 padding: 0;
+                user-select: text;
+                white-space: pre; /* pre-wrap;*/
+                border: 20px solid var(--skua-accent);
             }
         
-            #contents[data-wrap="nowrap"] {
+            #contents[data-wrap="nowrap"], #contents:not([data-wrap]) {
                 overflow: scroll;
             }
-            #contents[data-wrap="wrap"], #contents:not([data-wrap]) {
+            #contents[data-wrap="wrap"] {
                 white-space: pre-wrap;
             }
         
@@ -245,7 +283,7 @@
 $objEvent(server, "load").on = async () => {
     const filename = server.slugs.filename;
     const filepath = `/home/0x5da/projects/${server.slugs.name}/${filename ?? ""}`;
-    const repoFilesPath = `/repo/${server.slugs.name}/${server.slugs.branch}/${server.slugs.commit}/files`;
+    const repoFilesPath = `/repo/${server.slugs.name}/files/${server.slugs.branch}/${server.slugs.commit}`;
 
     let cpath = repoFilesPath;
     const root = `<a href=${repoFilesPath + "/"} style="color: var(--working)">/</a>`;
@@ -261,7 +299,20 @@ $objEvent(server, "load").on = async () => {
     const isDir = !filename || runGit(server.slugs.name, `ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
-    // TODO: commit deets :)
+    // ^0
+    const log = runGitExtract(server.slugs.name, `log --reverse --format="%ct %H %s" ${filename ?? "."}`, "time", "hash", "message");
+    const currentHash = runGit(server.slugs.name, `rev-parse ${server.slugs.commit}`);
+    for (const commit of log) {
+        $("#commit-template").$templateClone({
+            revLink: server.url.replace(server.slugs.commit, commit.hash), // TODO: is this reliable?
+            detailsLink: `/repo/${server.slugs.name}/commit/${commit.hash}`,
+            msg: sanitise(commit.message),
+            time: getFormattedTime(new Date(commit.time * 1000)),
+        }, {
+            id: commit.hash == currentHash ? "current-commit" : ""
+        });
+    }  
+
 
     // we can't just place these branches in script tags in their respective `option`s, because
     //   we'd have to `$select` the correct branch here [at the bottom of the file], by which time *both* 
@@ -277,11 +328,7 @@ $objEvent(server, "load").on = async () => {
     
         for (const { path, type } of dircontents) {
             let [ time, message ] = 
-                runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^ -- ${path}`)
-            // if the entry was added in this commit
-            if (!time || !message)
-                [ time, message ] = 
-                    runGitLines(server.slugs.name, `show --format="%ct%n%s" ${server.slugs.commit} -- ${path}`)
+                runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^0 -- ${path}`)
 
             $("#row").$templateClone({
                 name: path + (type === "tree" ? "/" : ""),

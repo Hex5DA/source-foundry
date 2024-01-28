@@ -36,7 +36,8 @@ function runSh(command) {
 function runShExtract(command, ...props) {
     return runSh(command).split("\n").filter(line => line).map(line => {
         const parts = line.split(" ");
-        return Object.assign({}, ...props.map((prop, idx) => ({ [prop]: parts[idx] })));
+        const capped = [...parts.slice(0, props.length - 1), parts.slice(props.length - 1).join(" ")];
+        return Object.assign({}, ...props.map((prop, idx) => ({ [prop]: capped[idx] })));
     });
 }
 
@@ -46,5 +47,14 @@ const runGitExtract = (repo, command, ...props) => runShExtract(`git --git-dir $
 
 function stripEnd(str, pat) {
     return (str ?? "").endsWith(pat) ? str.replace(pat, "") : str;
+}
+
+function sanitise(string) {
+    return string
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;")
 }
 
