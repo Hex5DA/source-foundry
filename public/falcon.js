@@ -46,6 +46,7 @@ Element.prototype.$templateClone = function(ctx, attrs = {}) {
     }
 }
 
+// would this make more sense as $select?
 NodeList.prototype.$cfg = function(option) {
     this.forEach(node => {
         if (((node instanceof HTMLOptionElement && node.value) || node.dataset.value) != option)
@@ -60,20 +61,22 @@ NodeList.prototype.$recfg = function(option) {
     });
 };
 
-// TODO: this is borked and should probably die
 NodeList.prototype.$cfgClone = function(option) {
-    this.forEach(node => {
+    const firstIter = Array.from(this).every(el => !el.hasAttribute("data-flntemplate"));
+    if (firstIter) this.forEach(node => {
         node.setAttribute("data-flntemplate", "");
-        if (node.hasAttribute("data-cloned")) return;
         node.style.display = "none";
+    });
 
+    this.forEach(node => {
+        if (!node.hasAttribute("data-flntemplate")) return;
         if (((node instanceof HTMLOptionElement && node.value)
             || node.dataset.value) == option) {
 
             node.after(node.cloneNode(true));
             _removeIdentifiable(node.nextSibling);
+            node.nextSibling.removeAttribute("data-flntemplate");
             node.nextSibling.style.display = "revert";
-            node.nextSibling.setAttribute("data-cloned", "");
 
             if (node.nextSibling.dataset.value) node.nextSibling.removeAttribute("data-value");
             if (node.nextSibling.value) node.nextSibling.removeAttribute("value");
