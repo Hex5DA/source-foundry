@@ -152,7 +152,7 @@
                     for (const row of $all("#repos > tr")) {
                         const name = row.getElementsByClassName("repo-name")[0].innerText;
                         row.style.display = row.id !== "row" && 
-                                            name.startsWith(ev.target.value) ? "table-row" : "none";
+                                            name.startsWith(ev.target.value) ? "revert" : "none";
                     }
                 };
             };
@@ -206,7 +206,7 @@
                 margin: 0;
                 padding: 0;
                 user-select: text;
-                white-space: pre; /* pre-wrap;*/
+                white-space: pre; /* TODO: pre-wrap;*/
                 border: 20px solid var(--skua-accent);
             }
         
@@ -319,20 +319,28 @@ $objEvent(server, "load").on = async () => {
     //   branches have had `load` event handlers registered. all work-arounds i found were worse than 1 if-else.
     // NOTE: we can still have window events, though!
     if (isDir) {
-        const dircontents = runGitExtract(
+        const getEntries = path => runGitExtract(
             server.slugs.name,
-            `ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} ${(filename ?? ".") + "/"}`,
+            `ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} -- ${path}`,
             "path",
             "type"
         );
-    
-        for (const { path, type } of dircontents) {
-            let [ time, message ] = 
+
+        for (const { path, type } of getEntries((filename ?? ".") + "/")) {
+            const [ time, message ] = 
                 runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^0 -- ${path}`)
 
+            // you could probably write this cleaner with `do..while`
+            let href = path;
+            while (true) {
+                let subs = getEntries(href + "/");
+                if (subs.length !== 1 || subs[0].type !== "tree") break;
+                href = subs[0].path;
+            }
+
             $("#row").$templateClone({
-                name: path + (type === "tree" ? "/" : ""),
-                filename: repoFilesPath + "/" + path,
+                name: href + (type === "tree" ? "/" : ""),
+                filename: repoFilesPath + "/" + href,
                 lastCommit: getFormattedTime(new Date(time * 1000)), // *1000 because JS wants ms
                 commitMessage: message,
             }, {
