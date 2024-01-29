@@ -11,6 +11,8 @@ $objEvent(server, "load").on = () => {
     const isDir = !filename || runGit(server.slugs.name, `ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
+    // TODO: think we might want to have a `falcon` utility
+    //         to smplify this kinda thing because it seems a common pattern :/
     let cpath = repoFilesPath;
     const root = `<a href=${repoFilesPath + "/"} style="color: var(--working)">/</a>`;
     $("#backlink").$template({ backlink: root + ((filename ?? "")
@@ -23,7 +25,7 @@ $objEvent(server, "load").on = () => {
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
 
-    const log = runGitExtract(server.slugs.name, `log --reverse --format="%ct %H %s" ${filename ?? "."}`, "time", "hash", "message");
+    const log = runGitExtract(server.slugs.name, `log --reverse --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
     const currentHash = runGit(server.slugs.name, `rev-parse ${server.slugs.commit}`);
     for (const commit of log) {
         $("#commit-template").$templateClone({
