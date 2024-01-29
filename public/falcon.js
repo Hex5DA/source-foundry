@@ -97,6 +97,7 @@ function $objEvent(target, ...eventNames) {
             // we will assume this means the listener is valid, and bypass checks.
             // NOTE: if someone is using `addEventListener`, we're fucked :sweat_smile:
             const defining = document.currentScript || {};
+            // console.log(defining);
             eventNames.forEach(eventName =>
                 target.addEventListener(eventName, ev => (defining.isConnected ?? true) && handler(ev)));
         }
