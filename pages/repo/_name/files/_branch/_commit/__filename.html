@@ -8,7 +8,7 @@ $objEvent(server, "load").on = () => {
     window.filepath = `/home/0x5da/projects/${server.slugs.name}/${filename ?? ""}`;
     window.repoFilesPath = `/repo/${server.slugs.name}/files/${server.slugs.branch}/${server.slugs.commit}`;
 
-    const isDir = !filename || runGit(server.slugs.name, `ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
+    const isDir = !filename || git(`ls-tree --format="%(objecttype)" ${server.slugs.commit} -- ${stripEnd(filename, "/")}`) === "tree";
     $all(".path-opts").$cfg(isDir ? "dir" : "file");
 
     // TODO: think we might want to have a `falcon` utility
@@ -25,8 +25,8 @@ $objEvent(server, "load").on = () => {
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
 
-    const log = runGitExtract(server.slugs.name, `log --reverse --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
-    const currentHash = runGit(server.slugs.name, `rev-parse ${server.slugs.commit}`);
+    const log = gitExtract(`log --reverse --remove-empty --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
+    const currentHash = git(`rev-parse ${server.slugs.commit}`);
     for (const commit of log) {
         $("#commit-template").$templateClone({
             revLink: server.url.replace(server.slugs.commit, commit.hash), // TODO: is this reliable?
@@ -197,8 +197,7 @@ $objEvent(server, "load").on = () => {
             };
 
             $objEvent(server, "load").on = () => {;
-                const getEntries = path => runGitExtract(
-                    server.slugs.name,
+                const getEntries = path => gitExtract(
                     `ls-tree --format="%(path) %(objecttype)" ${server.slugs.commit} -- ${path}`,
                     "path",
                     "type"
@@ -206,7 +205,7 @@ $objEvent(server, "load").on = () => {
 
                 for (const { path, type } of getEntries((filename ?? ".") + "/")) {
                     const [ time, message ] = 
-                        runGitLines(server.slugs.name, `log -n 1 --format="%ct%n%s" ${server.slugs.commit}^0 -- ${path}`)
+                        gitLines(`log -n 1 --format="%ct%n%s" ${server.slugs.commit}^0 -- ${path}`)
 
                     // you could probably write this cleaner with `do..while`
                     let href = path;
@@ -348,7 +347,7 @@ $objEvent(server, "load").on = () => {
 
             $objEvent(server, "load").on = async () => {
                 const { starryNight: { common: langs, createStarryNight }, hastToHtml } = server.imports;
-                const contents = runGit(server.slugs.name, `show ${server.slugs.commit}:${server.slugs.filename}`);
+                const contents = git(`show ${server.slugs.commit}:${server.slugs.filename}`);
                 const st = await createStarryNight(langs);
                 const scope = st.flagToScope(filename.split(".").pop());
                 if (scope) {

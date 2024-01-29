@@ -34,14 +34,14 @@
 
 <script>
 $objEvent(server, "load").on = () => {
-    const branches = runGitLines(server.slugs.name, "branch").map(line => line.slice(2));
+    const branches = gitLines("branch").map(line => line.slice(2));
     if (!branches.length) $("#branch-template").remove();
     else branches.forEach(br => $("#branch-template").$templateClone({ branch: br }));
 
-    const tags = runGitLines(server.slugs.name, "tag");
+    const tags = gitLines("tag");
     if (!tags.length) $("#tag-template").remove();
     else tags.forEach(tag => {
-        const commit = runGit(server.slugs.name, `rev-list -n 1 ${tag}`);
+        const commit = git(`rev-list -n 1 ${tag}`);
         $("#tag-template").$templateClone({
             tag: tag,
             defbranch: "master", // TODO: find the default name
