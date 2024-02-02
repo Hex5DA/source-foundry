@@ -25,7 +25,8 @@ $objEvent(server, "load").on = () => {
         .join("<span style=\"color: var(--faint)\">/</span>")) });
 
 
-    const log = gitExtract(`log --reverse --remove-empty --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
+    // RE: `origin/..` yes? no?? eh??
+    const log = gitExtract(`log --reverse --branches origin/${server.slugs.branch} --remove-empty --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
     const currentHash = git(`rev-parse ${server.slugs.commit}`);
     for (const commit of log) {
         $("#commit-template").$templateClone({

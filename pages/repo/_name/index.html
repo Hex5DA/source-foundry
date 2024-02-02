@@ -33,10 +33,14 @@
 </div>
 
 <script>
+// my understanding of branches is way off, aye?
+// :sweat_smile:
 $objEvent(server, "load").on = () => {
-    const branches = gitLines("branch").map(line => line.slice(2));
-    if (!branches.length) $("#branch-template").remove();
+    const branches = new Set(gitLines("branch --all --list --format '%(refname:lstrip=-1)'"));
+    if (!branches.size) $("#branch-template").remove();
     else branches.forEach(br => $("#branch-template").$templateClone({ branch: br }));
+
+    const def = branches.has("master") ? "master" : (branches.has("main") ? "main" : branches[0]);
 
     const tags = gitLines("tag");
     if (!tags.length) $("#tag-template").remove();
@@ -44,7 +48,7 @@ $objEvent(server, "load").on = () => {
         const commit = git(`rev-list -n 1 ${tag}`);
         $("#tag-template").$templateClone({
             tag: tag,
-            defbranch: "master", // TODO: find the default name
+            defbranch: def,
             tagCommit: commit,
         });
     });
