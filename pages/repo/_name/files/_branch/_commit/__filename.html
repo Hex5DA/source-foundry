@@ -26,6 +26,7 @@ $objEvent(server, "load").on = () => {
 
 
     // RE: `origin/..` yes? no?? eh??
+    // TODO: i think there's a bug here! try looking at `2DMC/stale-Controls`! <8eb925e5a63d389111fa8a775a78dafac1faa117>
     const log = gitExtract(`log --reverse --branches origin/${server.slugs.branch} --remove-empty --format="%ct %H %s" -- ${filename ?? "."}`, "time", "hash", "message");
     const currentHash = git(`rev-parse ${server.slugs.commit}`);
     for (const commit of log) {

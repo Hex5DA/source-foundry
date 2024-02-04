@@ -1,8 +1,8 @@
-# sourcefoundry - a idiomatic `git server`
+  == SRCFNDRY ==
 
 a small, simple, idiomatic `git` frontend.
 
-## goals
+-- goals --
 
 this project was done primarily to stress-test `rtc`
 
@@ -20,13 +20,13 @@ furthermore, i'm targeting feature parity with [stagit]<https://codemadness.org/
 - Atom feed of the tags/refs (tags.xml).
 ? Detect submodules (.gitmodules file) from HEAD and link it as a webpage.
 
-## TODO
+-- todo --
 
 - branches
 - text format parser (& name)
 - [`falcon`] test framework
 
-## bugs
+-- bugs --
 
 - need `"`/`'` around directive paths
 - public directories should be configurable
@@ -34,13 +34,13 @@ furthermore, i'm targeting feature parity with [stagit]<https://codemadness.org/
 - if `server.onload` is blocking, the page will freeze. 
   > a [configurable] max timeout?
 - seperate `ssr` into own pkg (seperate from server again)
-  >> can use as a library, ie. for `tern` or as binary, ie. for SSG
-  >> SSG: just change buildsteps
-          support github pages - github CI to rebuild on push!
+  > can use as a library, ie. for `tern` or as binary, ie. for SSG
+  > SSG: just change buildsteps
+      support github pages - github CI to rebuild on push!
 - `tern-ssr` hardcores `url: "http:localhost:8080/"
 - `tern` - cull any element with a specified class (strip server-side code before serving!)
 
-## pipeline
+-- pipeline --
 
 1. `smew`
 2. copy static files to `dist/`

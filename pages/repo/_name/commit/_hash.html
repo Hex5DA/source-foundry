@@ -1,2 +1,70 @@
 <!-- @layout "default.html" -->
 <h1>COMMIT</h1>
+
+<style>
+a {
+    text-decoration: none;
+}
+
+.addition { color: red; }
+.deletion { color: green; }
+.meta { color: var(--faint); }
+pre { overflow: scroll; }
+</style>
+
+<div id="file-diff">
+    <h2><a href="[ link ]"><code>[ filename ]</code></a></h2>
+    <pre><code>[ diff ]</code></pre>
+</div>
+
+<script>
+function stripStart(str, pattern) {
+    if (!str.startsWith(pattern)) return null;
+    return str.replace(pattern, "");
+}
+
+$objEvent(server, "load").on = () => {
+    const diffs = [];
+    const diff = gitLines(`diff ${server.slugs.hash}`);
+    for (const line of diff) {
+        if (line.startsWith("diff --git")) 
+            diffs.push([]);
+        diffs[diffs.length - 1].push(sanitise(line));
+    }
+
+    for (const diff of diffs) {    
+        const formatted = diff.map((line, idx) => {
+            if (line.startsWith("+++") || line.startsWith("---") || line.startsWith("@@") || idx === 0 || idx === 1)
+                return `<span class="meta">${line}</span>`;
+            if ((text = stripStart(line, "+")) !== null)
+                return `<span class="deletion"> ${text}</span>`;
+            else if ((text = stripStart(line, "-")) !== null)
+                return `<span class="addition"> ${text}</span>`;
+            else
+                return `<span>${line}</span>`;
+        });
+
+        $("#file-diff").$templateClone({
+            link: "TBD",
+            filename: "TBD",
+            diff: formatted.join("\n"),
+        });
+    }
+
+    return;
+    for (const line of diff) {
+        if (filename = stripStart(line, /^\+\+\+ [a|b]\//)) {
+            // TODO: better way to get the branch
+            const branch =
+                gitLines(`branch --contains ${server.slugs.hash}`).filter(line => line.startsWith("*"))[0].slice(2);
+            $("#file-diff").$templateClone({
+                link: `/repo/${server.slugs.name}/files/${branch}/${server.slugs.hash}/${filename}`,
+                filename: filename,
+                diff: "AHH"
+            });
+        }
+    }
+
+
+};  
+</script>
